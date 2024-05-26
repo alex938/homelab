@@ -1,0 +1,28 @@
+id: deploy-ssh-key
+namespace: deploy-ssh-key
+inputs:
+  - id: server_ip
+    type: STRING
+  - id: username
+    type: STRING
+  - id: password
+    type: STRING
+  - id: public_key
+    type: STRING
+
+tasks:
+  - id: create-ssh-directory
+    type: io.kestra.plugin.fs.ssh.Command
+    host: "{{ inputs.server_ip }}"
+    username: "{{ inputs.username }}"
+    password: "{{ inputs.password }}"
+    commands:
+      - "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
+
+  - id: add_public_key
+    type: io.kestra.plugin.fs.ssh.Command
+    host: "{{ inputs.server_ip }}"
+    username: "{{ inputs.username }}"
+    password: "{{ inputs.password }}"
+    commands:
+      - "echo '{{ inputs.public_key }}' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"

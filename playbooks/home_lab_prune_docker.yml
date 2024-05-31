@@ -1,0 +1,37 @@
+id: docker_prune
+namespace: docker_cleanup
+
+tasks:
+    - id: setup
+      type: io.kestra.core.tasks.flows.WorkingDirectory
+      tasks:
+      
+      - id: git_clone
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/alex938/homelab
+        branch: main
+
+      - id: local_files
+        type: io.kestra.core.tasks.storages.LocalFiles
+        inputs:
+          docker_prune.yml: |
+            ---
+            - hosts: all
+              become: yes
+              tasks:
+                - name: Run Docker system prune
+                  ansible.builtin.command:
+                    cmd: "docker system prune -f"
+          id_rsa: "{{ secret('SSH_KEY') }}"
+
+      - id: run_docker_prune
+        type: io.kestra.plugin.ansible.cli.AnsibleCLI
+        docker:
+          image: cytopia/ansible:latest-tools
+          pullPolicy: IF_NOT_PRESENT
+          user: "1000"
+        commands:
+          - ansible-playbook -i inventory/inventroy.ini --key-file id_rsa docker_prune.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_REMOTE_USER: "{{ secret('SYSTEM_USERNAME') }}"

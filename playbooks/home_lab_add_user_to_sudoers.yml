@@ -1,0 +1,47 @@
+id: add_user_to_sudoers
+namespace: add_user_to_sudoers
+inputs:
+  - id: server_ip
+    type: STRING
+  - id: username
+    type: STRING
+  - id: sudo_password
+    type: STRING
+
+tasks:
+  - id: setup
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: local_files
+        type: io.kestra.core.tasks.storages.LocalFiles
+        inputs:
+          inventory.ini: |
+            {{ inputs.server_ip }}
+          myplaybook.yml: |
+            ---
+            - hosts: "{{ inputs.server_ip }}"
+              become: yes
+              tasks:
+                - name: Adding user to sudoers file
+                  debug:
+                    msg: "Adding {{ inputs.username }} to sudoers file"
+                - name: Adding user to sudoers file
+                  lineinfile:
+                    path: /etc/sudoers
+                    state: present
+                    regexp: '^{{ inputs.username }} '
+                    line: '{{ inputs.username }} ALL=(ALL) NOPASSWD: ALL'
+                    validate: '/usr/sbin/visudo -cf %s'
+          id_rsa: "{{ secret('SSH_KEY') }}"
+
+      - id: ansible_task
+        type: io.kestra.plugin.ansible.cli.AnsibleCLI
+        docker:
+          image: cytopia/ansible:latest-tools
+          pullPolicy: IF_NOT_PRESENT
+          user: "1000"
+        commands:
+          - ansible-playbook -i inventory.ini --key-file id_rsa myplaybook.yml --extra-vars "ansible_become_password={{ inputs.sudo_password }}"
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_REMOTE_USER: "{{ inputs.username }}"

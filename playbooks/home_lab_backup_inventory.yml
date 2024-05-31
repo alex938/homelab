@@ -8,6 +8,9 @@ inputs:
   - id: usb_mount_point
     type: STRING
     defaults: "/mnt/usb"
+  - id: avatar
+    type: STRING
+    defaults: https://avatars.githubusercontent.com/u/37157369
 
 tasks:
     - id: setup
@@ -33,7 +36,7 @@ tasks:
                       #!/bin/bash
                       sudo mkdir -p {{ inputs.usb_mount_point }}
                       sudo mount {{ inputs.usb_device }} {{ inputs.usb_mount_point }}
-                      sudo find {{ inputs.usb_mount_point }} -name 'home_backup_*.tar.gz' -mtime +7 -exec rm {} \;
+                      sudo find {{ inputs.usb_mount_point }} -name 'home_backup_*.tar.gz' -mtime +5 -exec rm {} \;
                       sudo tar czvf {{ inputs.usb_mount_point }}/home_backup_$(date +'%Y-%m-%d_%H_%M_%S').tar.gz -C /home/{{ secret('SYSTEM_USERNAME') }} .
                       sudo umount {{ inputs.usb_mount_point }}
                       sudo rm -rf {{ inputs.usb_mount_point }}

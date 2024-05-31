@@ -25,7 +25,7 @@ tasks:
           create_script.yml: |
             ---
             - hosts: all
-              become: yes
+              become: true
               tasks:
                 - name: Copy backup script to home directory
                   ansible.builtin.copy:
@@ -39,11 +39,12 @@ tasks:
                       sudo rm -rf {{ inputs.usb_mount_point }}
                     dest: /home/{{ secret('SYSTEM_USERNAME') }}/backup.sh
                     mode: '0755'
-          id_rsa1: "{{ secret('SSH_KEY') }}"        
+          id_rsa1: "{{ secret('SSH_KEY') }}"   
+
           execute_script.yml: |
             ---
             - hosts: all
-              become: yes
+              become: true
               tasks:
                 - name: Execute backup script
                   ansible.builtin.command:
@@ -73,3 +74,16 @@ tasks:
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_REMOTE_USER: "{{ secret('SYSTEM_USERNAME') }}"
+
+      - id: send_notification
+        type: io.kestra.plugin.notifications.discord.DiscordExecution
+        url: "{{ secret('DISCORD_WEBHOOK') }}"
+        avatarUrl: "{{ inputs.avatar }}"
+        username: "{{ secret('DISCORD_USERNAME') }}"
+        content: >
+          Server backups ran at: {{ execution.startDate }}
+        
+triggers:
+  - id: every_1_days
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 0 */1 * *"

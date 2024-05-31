@@ -57,7 +57,7 @@ tasks:
           pullPolicy: IF_NOT_PRESENT
           user: "1000"
         commands:
-          - ansible-playbook -i inventory.ini --key-file id_rsa1 create_script.yml
+          - ansible-playbook -i inventory/inventory.ini --key-file id_rsa1 create_script.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_REMOTE_USER: "{{ secret('SYSTEM_USERNAME') }}"

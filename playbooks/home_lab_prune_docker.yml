@@ -1,6 +1,13 @@
 id: docker_prune
 namespace: docker_cleanup
 
+inputs:
+  - id: avatar
+    type: STRING
+    defaults: https://avatars.githubusercontent.com/u/37157369
+  #- id: inventory
+  #  type: FILE
+
 tasks:
     - id: setup
       type: io.kestra.core.tasks.flows.WorkingDirectory
@@ -35,3 +42,16 @@ tasks:
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_REMOTE_USER: "{{ secret('SYSTEM_USERNAME') }}"
+          
+      - id: send_notification
+        type: io.kestra.plugin.notifications.discord.DiscordExecution
+        url: "{{ secret('DISCORD_WEBHOOK') }}"
+        avatarUrl: "{{ inputs.avatar }}"
+        username: "{{ secret('DISCORD_USERNAME') }}"
+        content: >
+          Docker prune task ran at: {{ execution.startDate }}
+        
+triggers:
+  - id: every_1_days
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 0 */1 * *"

@@ -1,0 +1,75 @@
+id: backup_and_cleanup_script
+namespace: backup_and_cleanup_script
+
+inputs:
+  - id: usb_device
+    type: STRING
+    defaults: "/dev/sdb1"
+  - id: usb_mount_point
+    type: STRING
+    defaults: "/mnt/usb"
+
+tasks:
+    - id: setup
+      type: io.kestra.core.tasks.flows.WorkingDirectory
+      tasks:
+
+      - id: git_clone
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/alex938/homelab
+        branch: main
+
+      - id: local_files
+        type: io.kestra.core.tasks.storages.LocalFiles
+        inputs:
+          create_script.yml: |
+            ---
+            - hosts: all
+              become: yes
+              tasks:
+                - name: Copy backup script to home directory
+                  ansible.builtin.copy:
+                    content: |
+                      #!/bin/bash
+                      sudo mkdir -p {{ inputs.usb_mount_point }}
+                      sudo mount {{ inputs.usb_device }} {{ inputs.usb_mount_point }}
+                      sudo find {{ inputs.usb_mount_point }} -name 'home_backup_*.tar.gz' -mtime +7 -exec rm {} \;
+                      sudo tar czvf {{ inputs.usb_mount_point }}/home_backup_$(date +'%Y-%m-%d_%H_%M_%S').tar.gz -C /home/{{ secret('SYSTEM_USERNAME') }} .
+                      sudo umount {{ inputs.usb_mount_point }}
+                      sudo rm -rf {{ inputs.usb_mount_point }}
+                    dest: /home/{{ {{ secret('SYSTEM_USERNAME') }} }}/backup.sh
+                    mode: '0755'
+          id_rsa1: "{{ secret('SSH_KEY') }}"        
+          execute_script.yml: |
+            ---
+            - hosts: all
+              become: yes
+              tasks:
+                - name: Execute backup script
+                  ansible.builtin.command:
+                    cmd: /home/{{ secret('SYSTEM_USERNAME') }}/backup.sh
+          id_rsa2: "{{ secret('SSH_KEY') }}"
+          
+      - id: create_script
+        type: io.kestra.plugin.ansible.cli.AnsibleCLI
+        docker:
+          image: cytopia/ansible:latest-tools
+          pullPolicy: IF_NOT_PRESENT
+          user: "1000"
+        commands:
+          - ansible-playbook -i inventory.ini --key-file id_rsa1 create_script.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_REMOTE_USER: "{{ secret('SYSTEM_USERNAME') }}"
+
+      - id: execute_script
+        type: io.kestra.plugin.ansible.cli.AnsibleCLI
+        docker:
+          image: cytopia/ansible:latest-tools
+          pullPolicy: IF_NOT_PRESENT
+          user: "1000"
+        commands:
+          - ansible-playbook -i inventory/inventory.ini --key-file id_rsa2 execute_script.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_REMOTE_USER: "{{ secret('SYSTEM_USERNAME') }}"

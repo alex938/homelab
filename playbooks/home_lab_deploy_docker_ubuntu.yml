@@ -1,0 +1,88 @@
+id: install_docker_and_compose
+namespace: install_docker_and_compose
+
+inputs:
+  - id: server_ip
+    type: STRING
+  - id: username
+    type: STRING
+  - id: ubuntuv
+    type: STRING
+    defaults: jammy
+  - id: avatar
+    type: STRING
+    defaults: https://avatars.githubusercontent.com/u/37157369
+
+tasks:
+  - id: setup
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: local_files
+        type: io.kestra.core.tasks.storages.LocalFiles
+        inputs:
+          inventory.ini: |
+            {{ inputs.server_ip }}
+          docker_install_playbook.yml: |
+            ---
+            - hosts: "{{ inputs.server_ip }}"
+              become: true
+
+              tasks:                 
+                - name: Install prerequisites
+                  apt:
+                    name:
+                      - ca-certificates
+                      - curl
+                    update_cache: yes
+
+                - name: Add Docker GPG key
+                  apt_key:
+                    url: https://download.docker.com/linux/ubuntu/gpg
+                    state: present
+               
+                - name: Debug Ubuntu version
+                  debug:
+                    msg: "Ubuntu version is {{ inputs.ubuntuv }}"
+
+                - name: Add Docker repository
+                  apt_repository:
+                    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ inputs.ubuntuv }} stable"
+                    state: present
+
+                - name: Update apt cache
+                  apt:
+                    update_cache: yes
+
+                - name: Install Docker
+                  apt:
+                    name:
+                      - docker-ce
+                      - docker-ce-cli
+                      - containerd.io
+                      - docker-compose-plugin
+                      - docker-buildx-plugin
+                    update_cache: yes
+
+                - name: Add user permissions
+                  shell: "usermod -aG docker {{ inputs.username }}"
+          id_rsa: "{{ secret('SSH_KEY') }}"
+
+      - id: ansible_task
+        type: io.kestra.plugin.ansible.cli.AnsibleCLI
+        docker:
+          image: cytopia/ansible:latest-tools
+          pullPolicy: IF_NOT_PRESENT
+          user: "1000"
+        commands:
+          - ansible-playbook -i inventory.ini --key-file id_rsa docker_install_playbook.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_REMOTE_USER: "{{ inputs.username }}"
+
+      - id: send_notification
+        type: io.kestra.plugin.notifications.discord.DiscordExecution
+        url: "{{ secret('DISCORD_WEBHOOK') }}"
+        avatarUrl: "{{ inputs.avatar }}"
+        username: "{{ secret('DISCORD_USERNAME ')}}"
+        content: >
+          Docker installed on {{ inputs.server_ip }}: {{ execution.startDate }}

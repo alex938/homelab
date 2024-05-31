@@ -37,7 +37,7 @@ tasks:
                       sudo tar czvf {{ inputs.usb_mount_point }}/home_backup_$(date +'%Y-%m-%d_%H_%M_%S').tar.gz -C /home/{{ secret('SYSTEM_USERNAME') }} .
                       sudo umount {{ inputs.usb_mount_point }}
                       sudo rm -rf {{ inputs.usb_mount_point }}
-                    dest: /home/{{ {{ secret('SYSTEM_USERNAME') }} }}/backup.sh
+                    dest: /home/{{ secret('SYSTEM_USERNAME') }}/backup.sh
                     mode: '0755'
           id_rsa1: "{{ secret('SSH_KEY') }}"        
           execute_script.yml: |

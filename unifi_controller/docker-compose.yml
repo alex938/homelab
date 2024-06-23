@@ -1,0 +1,14 @@
+services:
+  unifi-controller:
+    image: linuxserver/unifi-controller:latest
+    container_name: unifi-controller
+    environment:
+      - TZ=Europe/London
+    volumes:
+      - /home/alex/unificontroller/:/config
+    ports:
+      - 8443:8443
+      - 3478:3478/udp
+      - 10001:10001/udp
+      - 8080:8080
+    restart: unless-stopped

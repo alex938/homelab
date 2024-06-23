@@ -1,1 +1,19 @@
-
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    ports:
+      - 3000:3000
+    volumes:
+      - ./config:/app/config 
+      - ./images:/app/public/images 
+      - ./icons:/app/public/icons 
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      HOMEPAGE_VAR_USER: $HOMEPAGE_VAR_USER
+      HOMEPAGE_VAR_PASSWORD: $HOMEPAGE_VAR_PASSWORD
+      HOMEPAGE_VAR_PTACCESS: $HOMEPAGE_VAR_PTACCESS
+      HOMEPAGE_VAR_PTACCESS2: $HOMEPAGE_VAR_PTACCESS2
+    restart: unless-stopped

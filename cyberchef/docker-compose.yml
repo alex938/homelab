@@ -1,1 +1,10 @@
+services:
+  cyber-chef:
+    image: mpepping/cyberchef:latest
+    restart: always
+    networks:
+      - shared_network
 
+networks:
+  shared_network:
+    external: true

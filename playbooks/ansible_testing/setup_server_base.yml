@@ -1,0 +1,97 @@
+---
+- name: Base setup of new server
+  hosts: servers
+  become: true
+  vars_files:
+    - vault.yml
+  vars:
+    motd_debian: "*** labjunkie.org - no unauthorised access ***\n"
+
+  tasks:
+    - name: Ping the host
+      ansible.builtin.ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Display debug info for host
+      debug:
+        msg: "Host {{ inventory_hostname }} is running {{ ansible_distribution }}"
+      when: ping_result is not failed
+
+    - name: set ssh motd
+      copy:
+        content: "{{ motd_debian }}"
+        dest: /etc/motd
+        mode: '0644'
+      when: ping_result is not failed
+      notify: MOTD changed
+
+    - name: update and upgrade packages on debian or ubuntu
+      apt:
+        upgrade: dist
+        update_cache: yes
+        force_apt_get: yes
+      when: ansible_distribution in ["Debian", "Ubuntu"] and ping_result is not failed
+      notify: Updated Server
+
+    - name: update and upgrade packages centos
+      yum:
+        name: "*"
+        state: latest
+        update_cache: yes
+      when: ansible_distribution == "CentOS" and ping_result is not failed
+      notify: Updated Server
+
+    - name: check if docker is installed
+      command: which docker
+      register: docker_installed
+      ignore_errors: true
+      when: ping_result is not failed
+      notify: Docker Already Installed
+
+    - name: download docker install script
+      ansible.builtin.get_url:
+        url: https://get.docker.com
+        dest: /tmp/getdocker.sh
+        mode: '0744'
+      when: docker_installed.rc != 0 and ping_result is not failed
+      notify: Docker Script Downloaded
+
+    - name: install docker
+      shell: yes | sh /tmp/getdocker.sh
+      when: docker_installed.rc != 0 and ping_result is not failed
+      notify: Docker Installed
+
+    - name: check if docker installation script exists
+      stat:
+        path: /tmp/getdocker.sh
+      register: docker_script
+      when: ping_result is not failed
+
+    - name: cleanup docker installation script
+      ansible.builtin.file:
+        path: /tmp/getdocker.sh
+        state: absent
+      when: docker_script.stat.exists and ping_result is not failed
+      notify: Docker Script Removed
+
+  handlers:
+    - name: MOTD changed
+      debug:
+        msg: The MOTD was changed on {{ inventory_hostname }}
+    - name: Updated Server
+      debug:
+        msg: Packages were updated
+    - name: Docker Script Downloaded
+      debug:
+        msg: Docker script downloaded
+    - name: Docker Installed
+      debug:
+        msg: Docker installed
+    - name: Docker Script Removed
+      debug:
+        msg: Docker installation script removed
+    - name: Docker Already Installed
+      debug:
+        msg: Docker already installed

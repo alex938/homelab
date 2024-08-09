@@ -1,0 +1,24 @@
+---
+- hosts: localhost
+
+  pre_tasks:
+    - name: Load environment variables
+      include_vars: env_vars.yml
+
+  tasks:
+    - name: Print VALUE1
+      debug:
+        msg: "VALUE1 is {{ VALUE1 }}"
+
+    - name: Print VALUE2
+      debug:
+        msg: "VALUE2 is {{ VALUE2 }}"
+
+    - name: Print VALUE3
+      debug:
+        msg: "VALUE3 is {{ VALUE3 }}"
+
+    - name: Print VALUE4
+      debug:
+        msg: "VALUE4 is {{ VALUE4 }}"
+

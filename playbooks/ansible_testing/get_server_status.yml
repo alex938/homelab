@@ -1,0 +1,27 @@
+---
+- name: Gather facts from servers
+  hosts: servers
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Ping the host
+      ansible.builtin.ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Gather facts
+      ansible.builtin.setup:
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Display Operating System
+      ansible.builtin.debug:
+        msg: "Operating System: {{ ansible_facts['os_family'] }}"
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Display Memory
+      debug:
+        msg: "Total Memory: {{ ansible_facts['memtotal_mb'] }} MB"
+      when: ping_result.ping is defined and ping_result.ping == 'pong'

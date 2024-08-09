@@ -1,0 +1,9 @@
+---
+- hosts: servers
+  become: yes
+  vars_files:
+    - vault.yml
+    
+  tasks:
+    - name: Test connection
+      ping:

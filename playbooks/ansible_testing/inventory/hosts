@@ -1,0 +1,16 @@
+[control]
+alex ansible_connection=local
+
+[pi3]
+192.168.0.16
+
+[ubuntu]
+192.168.2.33
+
+[centos]
+192.168.2.34
+
+[servers:children]
+pi3
+centos
+ubuntu

@@ -1,0 +1,19 @@
+---
+- name: Gather and print all facts for servers
+  hosts: servers
+  become: true
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Test connection
+      ansible.builtin.ping:
+
+    - name: Gather distribution facts
+      ansible.builtin.setup:
+        filter: ansible_distribution
+
+    - name: Print distribution details
+      ansible.builtin.debug:
+        msg: "Distribution is: {{ ansible_distribution }}"
+...

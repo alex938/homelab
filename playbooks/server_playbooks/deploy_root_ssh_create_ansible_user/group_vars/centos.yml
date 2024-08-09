@@ -1,5 +1,6 @@
 ---
 ansible_port: 22
+ansible_user: alex
 ansible_become_password: "{{ centos_password }}" #set in the vault
 ansible_ssh_pass: "{{ centos_password }}"
 ...

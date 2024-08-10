@@ -1,9 +1,10 @@
 ---
-- name: Gather facts from servers
-  hosts: servers
+- name: Gather facts from training
+  hosts: training
   gather_facts: false
   vars_files:
     - vault.yml
+    - group_vars/training2.yml
 
   tasks:
     - name: Ping the host
@@ -24,4 +25,12 @@
     - name: Display Memory
       ansible.builtin.debug:
         msg: "Total Memory: {{ ansible_facts['memtotal_mb'] }} MB"
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Display Network Adapter Information
+      ansible.builtin.debug:
+        msg:
+          Adapter Name: "{{ ansible_default_ipv4.interface }}"
+          IP Address: "{{ ansible_default_ipv4.address }}"
+          MAC Address: "{{ ansible_default_ipv4.macaddress }}"
       when: ping_result.ping is defined and ping_result.ping == 'pong'

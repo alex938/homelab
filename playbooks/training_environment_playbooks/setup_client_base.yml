@@ -1,0 +1,91 @@
+---
+- name: Base setup of new training kali
+  hosts: training
+  become: true
+  vars_files:
+    - vault.yml
+    - group_vars/training2.yml
+  vars:
+    motd_debian: "*** training kali - no unauthorised access ***\n"
+
+  tasks:
+    - name: Ping the host
+      ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Display debug info for host
+      debug:
+        msg: "Host {{ inventory_hostname }} is running {{ ansible_distribution }}"
+      when: ping_result is not failed
+
+    - name: set ssh motd
+      copy:
+        content: "{{ motd_debian }}"
+        dest: /etc/motd
+        mode: '0644'
+      when: ping_result is not failed
+      notify: MOTD changed
+
+    - name: Update package cache
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+      when: ansible_distribution in ["Debian", "Ubuntu", "Kali"] and ping_result is not failed
+      notify: Updated Server
+
+    - name: install sliver package
+      apt:
+        name: sliver
+        state: present
+      when: ansible_distribution in ["Debian", "Ubuntu", "Kali"] and ping_result is not failed
+      notify: Sliver Installed
+
+    - name: install xrdp package
+      apt:
+        name: xrdp
+        state: present
+      when: ansible_distribution in ["Debian", "Ubuntu", "Kali"] and ping_result is not failed
+      notify: XRDP Installed
+
+    - name: enable XRDP service on startup
+      systemd:
+        name: xrdp
+        enabled: yes
+        state: started
+      when: ansible_distribution in ["Debian", "Ubuntu", "Kali"] and ping_result is not failed
+      notify: XRDP Enabled on Startup
+
+    - name: enabled session manager service on startup
+      systemd:
+        name: xrdp-sesman
+        enabled: yes
+        state: started
+      when: ansible_distribution in ["Debian", "Ubuntu", "Kali"] and ping_result is not failed
+      notify: Sesman Enabled on Startup
+
+  handlers:
+    - name: MOTD changed
+      debug:
+        msg: The MOTD was changed on {{ inventory_hostname }}
+
+    - name: Updated Server
+      debug:
+        msg: Packages were updated
+
+    - name: Sliver Installed
+      debug:
+        msg: Sliver Installed
+
+    - name: XRDP Installed
+      debug:
+        msg: XRDP Installed
+
+    - name: XRDP Enabled on Startup
+      debug:
+        msg: XRDP Enabled on Startup
+
+    - name: Sesman Enabled on Startup
+      debug:
+        msg: Sesman Enabled on Startup

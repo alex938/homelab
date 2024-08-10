@@ -1,0 +1,32 @@
+[control]
+alex ansible_connection=local
+
+[kali1]
+192.168.2.31 training_subnet_ip=192.168.1.200
+
+[kali2]
+192.168.2.32 training_subnet_ip=192.168.1.201
+
+[kali3]
+192.168.2.33 training_subnet_ip=192.168.1.202
+
+[kali4]
+192.168.2.34 training_subnet_ip=192.168.1.203
+
+[kali5]
+192.168.2.35 training_subnet_ip=192.168.1.204
+
+[kali6]
+192.168.2.36 training_subnet_ip=192.168.1.205
+
+[sliversvr]
+192.168.2.37
+
+[training:children]
+kali1
+kali2
+kali3
+kali4
+kali5
+kali6
+sliversvr

@@ -1,0 +1,27 @@
+---
+- name: Reboot training kali
+  hosts: training
+  become: true
+  gather_facts: false
+  vars_files:
+    - vault.yml
+    - group_vars/training2.yml
+
+  tasks:
+    - name: Ping the host
+      ansible.builtin.ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Gather facts
+      ansible.builtin.setup:
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Reboot the system
+      ansible.builtin.reboot:
+      when: ping_result.ping is defined and ping_result.ping == 'pong' and ansible_distribution in ["Debian", "Ubuntu", "Kali"]
+
+    - name: Debug reboot result
+      debug:
+        var: ansible_facts.reboot_required

@@ -1,0 +1,6 @@
+---
+ansible_port: 22
+ansible_user: kali
+ansible_become_password: "{{ kali_password }}" #set in the vault
+ansible_ssh_pass: "{{ kali_password }}"
+...

@@ -1,2 +1,4 @@
 .vscode
 **/vault.yml
+**/playbook_files
+**/playbook_files/*

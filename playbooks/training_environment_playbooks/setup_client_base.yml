@@ -89,12 +89,26 @@
         dest: /tmp/ms-vscode.cpptools-1.21.6@linux-x64.vsix
       notify: Copy cpp extension
 
-    - name: install vscode cpp extensions
-      command: >
-        code --install-extension /tmp/ms-vscode.cpptools-1.21.6@linux-x64.vsix --no-sandbox --user-data-dir=/home/kali/.vscode
-      args:
-        creates: ~/.vscode/extensions/ms-vscode.cpptools-1.21.6
-      notify: Install cpp extension
+#    - name: install vscode cpp extensions
+#      command: >
+#        code --install-extension /tmp/ms-vscode.cpptools-1.21.6@linux-x64.vsix --no-sandbox --user-data-dir=/home/kali/.vscode
+#      args:
+#        creates: ~/.vscode/extensions/ms-vscode.cpptools-1.21.6
+#      notify: Install cpp extension
+
+    - name: create VS Code extensions directory if not exists
+      file:
+        path: /home/kali/.vscode/extensions
+        state: directory
+        mode: '0755'
+        owner: kali
+        group: kali
+
+    - name: unzip the VSIX extension into the extensions directory
+      unarchive:
+        src: /tmp/ms-vscode.cpptools-1.21.6@linux-x64.vsix
+        dest: /home/kali/.vscode/extensions/
+        remote_src: yes
 
     - name: clean up extension files
       file:

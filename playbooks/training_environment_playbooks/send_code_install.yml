@@ -1,0 +1,65 @@
+---
+- name: Install code
+  hosts: training
+  become: true
+  vars_files:
+    - vault.yml
+    - group_vars/training.yml
+  vars:
+    motd_debian: "*** training kali - no unauthorised access ***\n"
+
+  tasks:
+    - name: Ping the host
+      ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Display debug info for host
+      debug:
+        msg: "Host {{ inventory_hostname }} is running {{ ansible_distribution }}"
+      when: ping_result is not failed
+
+    - name: set ssh motd
+      copy:
+        content: "{{ motd_debian }}"
+        dest: /etc/motd
+        mode: '0644'
+      when: ping_result is not failed
+      notify: MOTD changed
+
+    - name: copy vscode .deb package to host
+      copy:
+        src: playbook_files/code.deb
+        #src: playbook_files/terminator_2.1.4-3_all.deb
+        dest: /tmp/code.deb
+      notify: Copy vscode installer
+
+    - name: install vscode
+      apt:
+        deb: /tmp/code.deb
+        state: present
+      notify: Install vscode
+
+    - name: cleanup vscode .deb
+      file:
+        path: /tmp/code.deb
+        state: absent
+      notify: Cleanup vscode
+
+  handlers:
+    - name: MOTD changed
+      debug:
+        msg: The MOTD was changed on {{ inventory_hostname }}
+
+    - name: Copy vscode installer
+      debug:
+        msg: Copy vscode installer
+
+    - name: Install vscode
+      debug:
+        msg: Install vscode
+
+    - name: Cleanup vscode
+      debug:
+        msg: Cleanup vscode

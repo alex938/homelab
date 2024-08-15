@@ -5,7 +5,7 @@
   gather_facts: false
   vars_files:
     - vault.yml
-    - group_vars/training2.yml
+    - group_vars/training.yml
 
   tasks:
     - name: Ping the host

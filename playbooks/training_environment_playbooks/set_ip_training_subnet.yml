@@ -5,7 +5,7 @@
   gather_facts: true
   vars_files:
     - vault.yml
-    - group_vars/training2.yml
+    - group_vars/training.yml
   #vars_prompt:
   #  - name: "new_ip"
   #    prompt: "Enter the new IP address"

@@ -1,0 +1,49 @@
+---
+- name: Install code extension
+  hosts: training
+  become: true
+  vars_files:
+    - vault.yml
+    - group_vars/training.yml
+
+  tasks:
+    - name: Ping the host
+      ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Display debug info for host
+      debug:
+        msg: "Host {{ inventory_hostname }} is running {{ ansible_distribution }}"
+      when: ping_result is not failed
+
+    - name: create extensions folder
+      file:
+        path: /home/kali/.vscode/extensions
+        state: directory
+        mode: '0755'
+        owner: kali
+        group: kali
+      notify: Create extensions directory
+
+    - name: copy extension to kali host
+      copy:
+        src: playbook_files/ms-vscode.cpptools-1.21.6@linux-x64.vsix
+        dest: /tmp/ms-vscode.cpptools-1.21.6@linux-x64.vsix
+
+    - name: unzip vsix
+      unarchive:
+        src: /tmp/ms-vscode.cpptools-1.21.6@linux-x64.vsix
+        dest: /home/kali/.vscode/extensions/
+        remote_src: yes
+      notify: Unzip vsix into extensions directory
+
+  handlers:
+    - name: Create extensions directory
+      debug:
+        msg: Create extensions directory
+
+    - name: Unzip vsix into extensions directory
+      debug:
+        msg: Unzip vsix into extensions directory

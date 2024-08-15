@@ -4,7 +4,7 @@
   become: true
   vars_files:
     - vault.yml
-    - group_vars/training2.yml
+    - group_vars/training.yml
   vars:
     motd_debian: "*** training kali - no unauthorised access ***\n"
 
@@ -65,50 +65,6 @@
       when: ansible_distribution in ["Debian", "Ubuntu", "Kali"] and ping_result is not failed
       notify: Sesman Enabled on Startup
 
-    - name: copy vscode .deb package to host
-      copy:
-        src: ../../playbook_files/code.deb
-        dest: /tmp/code.deb
-      notify: Copy vscode installer
-
-    - name: install vscode
-      apt:
-        deb: /tmp/code.deb
-        state: present
-      notify: Install vscode
-
-    - name: cleanup vscode .deb
-      file:
-        path: /tmp/code.deb
-        state: absent
-      notify: Cleanup vscode
-
-    - name: copy vscode cpp extension
-      copy:
-        src: ../../playbook_files/ms-vscode.cpptools-1.21.6@linux-x64.vsix
-        dest: /tmp/ms-vscode.cpptools-1.21.6@linux-x64.vsix
-      notify: Copy cpp extension
-
-    - name: create VS Code extensions directory if not exists
-      file:
-        path: /home/kali/.vscode/extensions
-        state: directory
-        mode: '0755'
-        owner: kali
-        group: kali
-
-    - name: unzip the VSIX extension into the extensions directory
-      unarchive:
-        src: /tmp/ms-vscode.cpptools-1.21.6@linux-x64.vsix
-        dest: /home/kali/.vscode/extensions/
-        remote_src: yes
-
-    - name: clean up extension files
-      file:
-        path: /tmp/cms-vscode.cpptools-1.21.6@linux-x64.vsix
-        state: absent
-      notify: Cleanup up cpp extension files
-
   handlers:
     - name: MOTD changed
       debug:
@@ -133,27 +89,3 @@
     - name: Sesman Enabled on Startup
       debug:
         msg: Sesman Enabled on Startup
-
-    - name: Copy vscode installer
-      debug:
-        msg: Copy vscode installer
-
-    - name: Install vscode
-      debug:
-        msg: Install vscode
-
-    - name: Cleanup vscode
-      debug:
-        msg: Cleanup vscode
-
-    - name: Copy cpp extension
-      debug:
-        msg: Copy cpp extension
-
-    - name: Install cpp extension
-      debug:
-        msg: Install cpp extension
-
-    - name: Cleanup up cpp extension files
-      debug:
-        msg: Cleanup up cpp extension files

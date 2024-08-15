@@ -29,10 +29,10 @@
 
     - name: update and upgrade packages on debian or ubuntu
       apt:
-        upgrade: dist
+        upgrade: safe 
         update_cache: yes
         force_apt_get: yes
-      when: ansible_distribution in ["Debian", "Ubuntu"] and ping_result is not failed
+      when: ansible_distribution == "Ubuntu"
       notify: Updated Server
 
     - name: update and upgrade packages centos
@@ -40,7 +40,7 @@
         name: "*"
         state: latest
         update_cache: yes
-      when: ansible_distribution == "CentOS" and ping_result is not failed
+      when: ansible_distribution == "CentOS"
       notify: Updated Server
 
     - name: check if docker is installed

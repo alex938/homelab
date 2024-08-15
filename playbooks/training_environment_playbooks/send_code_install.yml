@@ -30,7 +30,7 @@
 
     - name: copy vscode .deb package to host
       copy:
-        src: playbook_files/code.deb
+        src: ../../playbook_files/code.deb
         #src: playbook_files/terminator_2.1.4-3_all.deb
         dest: /tmp/code.deb
       notify: Copy vscode installer

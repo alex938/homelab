@@ -1,5 +1,0 @@
----
-ansible_port: 22
-ansible_become_password: "{{ pi_password }}" #set in the vault
-ansible_ssh_pass: "{{ pi_password }}"
-...

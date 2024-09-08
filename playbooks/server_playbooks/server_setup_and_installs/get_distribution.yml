@@ -4,7 +4,6 @@
   become: true
   vars_files:
     - vault.yml
-    - group_vars/all.yml
 
   tasks:
     - name: Test connection

@@ -3,12 +3,14 @@ alex ansible_connection=local
 
 [pi3]
 192.168.0.16
+192.168.0.20 #new nas
 
 [centos]
 192.168.2.34 
 
 [ubuntu]
 192.168.2.33
+next.labjunkie.org
 
 [servers:children]
 pi3

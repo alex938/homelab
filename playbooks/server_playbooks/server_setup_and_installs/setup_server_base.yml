@@ -32,7 +32,7 @@
         upgrade: safe 
         update_cache: yes
         force_apt_get: yes
-      when: ansible_distribution == "Ubuntu"
+      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
       notify: Updated Server
 
     - name: update and upgrade packages centos

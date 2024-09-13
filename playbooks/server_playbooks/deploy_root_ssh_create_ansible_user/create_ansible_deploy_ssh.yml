@@ -32,6 +32,21 @@
       notify: notify_copy_initial_pub
       when: ping_result is succeeded
 
+    # strong password set for RDP if required
+
+    - name: Generate password hash from vault-stored password
+      set_fact:
+        hashed_password: "{{ new_super_password | password_hash('sha512') }}"
+      notify: hash_new_super_user_password
+
+    - name: Change the super users password
+      user:
+        name: "{{ ansible_user }}"
+        update_password: always
+        password: "{{ hashed_password }}"
+      notify: update_super_user_password
+      when: ping_result is succeeded
+
     - name: Disable password authentication for SSH
       lineinfile:
         path: /etc/ssh/sshd_config
@@ -52,6 +67,19 @@
     - name: notify_copy_initial_pub
       debug:
         msg: "Initial user public key copied to {{ hostvars[inventory_hostname]['ansible_hostname'] }}"
+
+    - name: hash_new_super_user_password
+      debug:
+        msg: "Created new super user password hash"
+
+    - name: update_super_user_password
+      debug:
+        msg: "Changed super user password on {{ hostvars[inventory_hostname]['ansible_hostname'] }}"
+
+    - name: notify_disable_password_auth
+      debug:
+        msg: "Password authentication disabled for initial user on {{ hostvars[inventory_hostname]['ansible_hostname'] }}"
+
 
     - name: notify_disable_password_auth
       debug:

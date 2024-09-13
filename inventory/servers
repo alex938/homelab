@@ -11,10 +11,10 @@ pi5-svr2.labjunkie.org
 dev1.labjunkie.org #dev machine pi5
 
 [centos]
-192.168.2.34 
+192.168.2.34 #ansible test vm
 
 [ubuntu]
-192.168.2.33
+192.168.2.33 #ansible test vm
 next.labjunkie.org
 
 [servers:children]

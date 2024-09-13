@@ -8,6 +8,7 @@ alex ansible_connection=local
 [pi5]
 pi5-svr1.labjunkie.org
 pi5-svr2.labjunkie.org
+dev1.labjunkie.org #dev machine pi5
 
 [centos]
 192.168.2.34 

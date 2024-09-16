@@ -16,6 +16,7 @@ dev1.labjunkie.org #dev machine pi5
 [ubuntu]
 192.168.2.33 #ansible test vm
 next.labjunkie.org
+dev2.labjunkie.org
 
 [servers:children]
 pi3

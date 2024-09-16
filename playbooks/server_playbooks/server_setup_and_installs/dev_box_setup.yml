@@ -50,11 +50,23 @@
       when: ping_result is not failed
       notify: Docker Already Installed
 
-    - name: download docker install script
-      ansible.builtin.get_url:
-        url: https://get.docker.com
-        dest: /tmp/getdocker.sh
-        mode: '0744'
+    #- name: download docker install script
+      #ansible.builtin.get_url:
+      #  url: https://raw.githubusercontent.com/docker/docker-install/master/install.sh
+      #  dest: /tmp/getdocker.sh
+      #  validate_certs: no
+      #  mode: '0744'
+      #when: docker_installed.rc != 0 and ping_result is not failed
+      #notify: Docker Script Downloaded
+
+    - name: Ensure curl is installed
+      ansible.builtin.package:
+        name: curl
+        state: present
+
+    - name: Download Docker installation script using curl
+      ansible.builtin.command:
+        cmd: curl -fsSL https://raw.githubusercontent.com/docker/docker-install/master/install.sh -o /tmp/getdocker.sh
       when: docker_installed.rc != 0 and ping_result is not failed
       notify: Docker Script Downloaded
 
@@ -96,6 +108,12 @@
         state: started
       notify: Sesman Enabled on Startup
 
+    - name: install sshpass package
+      apt:
+        name: sshpass
+        state: present
+      notify: sshpass installed
+
   handlers:
     - name: MOTD changed
       debug:
@@ -132,3 +150,7 @@
     - name: Sesman Enabled on Startup
       debug:
         msg: Sesman Enabled on Startup
+
+    - name: sshpass installed
+      debug:
+        msg: sshpass installed

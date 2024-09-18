@@ -1,0 +1,33 @@
+---
+- name: Maintenance tasks
+  hosts: homelab
+  become: true
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Run Docker system prune
+      ansible.builtin.command:
+        cmd: "docker system prune -f"
+
+    - name: update and upgrade packages on debian or ubuntu
+      apt:
+        upgrade: safe 
+        update_cache: yes
+        force_apt_get: yes
+      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+      notify: Updated Server
+
+    - name: update and upgrade packages centos
+      yum:
+        name: "*"
+        state: latest
+        update_cache: yes
+      when: ansible_distribution == "CentOS"
+      notify: Updated Server
+
+  handlers:
+    - name: Updated Server
+      debug:
+        msg: Packages were updated on {{ inventory_hostname }}
+...

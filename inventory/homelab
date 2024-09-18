@@ -3,11 +3,11 @@ alex ansible_connection=local
 
 [pi3]
 192.168.0.16
-192.168.0.6 #remote nas
 
-[pi5-servers]
-pi5-svr1.labjunkie.org 
-pi5-svr2.labjunkie.org
+[pi5servers]
+pi5-svr1.labjunkie.org #portainer1
+pi5-svr2.labjunkie.org #portainer2
+192.168.0.6 #remote nas
 
 [nas]
 nas1.labjunkie.org #new nas
@@ -17,13 +17,13 @@ nas1.labjunkie.org #new nas
 
 [ubuntu]
 192.168.2.33 #ansible test vm
-next.labjunkie.org
+next.labjunkie.org #nexterm
 dev2.labjunkie.org #dev machine proxmox
 dev1.labjunkie.org #dev machine pi5
 
 [homelab:children]
 pi3
-pi5-servers
+pi5servers
 nas
 centos
 ubuntu

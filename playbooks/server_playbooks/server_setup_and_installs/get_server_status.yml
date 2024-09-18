@@ -1,11 +1,15 @@
 ---
 - name: Gather facts from servers
-  hosts: servers
+  hosts: homelab
   gather_facts: false
   vars_files:
     - vault.yml
 
   tasks:
+    - name: Check ansible_user
+      debug:
+        var: ansible_user
+
     - name: Ping the host
       ansible.builtin.ping:
       register: ping_result

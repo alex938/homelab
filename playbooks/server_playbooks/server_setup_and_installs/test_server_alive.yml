@@ -1,5 +1,5 @@
 ---
-- hosts: servers
+- hosts: homelab
   become: yes
   vars_files:
     - vault.yml

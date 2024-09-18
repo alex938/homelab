@@ -1,0 +1,5 @@
+---
+ansible_port: 22
+ansible_ssh_private_key_file: "{{ old_key }}"
+ansible_user: alex
+...

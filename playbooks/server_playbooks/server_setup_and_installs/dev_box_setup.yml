@@ -1,6 +1,6 @@
 ---
 - name: Base setup of new server
-  hosts: servers
+  hosts: homelab
   become: true
   vars_files:
     - vault.yml

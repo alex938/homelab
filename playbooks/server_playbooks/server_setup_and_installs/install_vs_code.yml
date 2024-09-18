@@ -1,6 +1,6 @@
 ---
 - name: Install VS Code
-  hosts: servers
+  hosts: homelab
   become: true
   vars_files:
     - vault.yml

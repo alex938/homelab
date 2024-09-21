@@ -30,6 +30,23 @@
       poll: 0
       notify: Updated Server
 
+    - name: Run apt-get autoclean on Debian or Ubuntu
+      apt:
+        autoclean: yes
+      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+
+    - name: Run apt-get autoremove on Debian or Ubuntu
+      apt:
+        autoremove: yes
+      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+
+    - name: Remove unnecessary packages on CentOS
+      yum:
+        name: "*"
+        state: absent
+        autoremove: yes
+      when: ansible_distribution == "CentOS"
+
   handlers:
     - name: Updated Server
       debug:

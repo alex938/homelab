@@ -7,7 +7,7 @@ alex ansible_connection=local
 [pi5servers]
 pi5-svr1.labjunkie.org #portainer1
 pi5-svr2.labjunkie.org #portainer2
-192.168.0.6 #remote nas
+#pi5-rivers.batcave.local (portainer3 to setup)
 
 [nas]
 nas1.labjunkie.org #new nas

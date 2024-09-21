@@ -12,6 +12,9 @@ pi5-svr2.labjunkie.org #portainer2
 [nas]
 nas1.labjunkie.org #new nas
 
+[dns]
+pi5-svr2.labjunkie.org
+
 [centos]
 192.168.2.34 #ansible test vm
 

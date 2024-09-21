@@ -1,0 +1,48 @@
+---
+- name: Clone DNS repo and update pihole custom.list
+  hosts: dns
+  become: true
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Clone the private repository from GitHub
+      delegate_to: localhost
+      ansible.builtin.git:
+        repo: "git@github.com:alex938/dns.git"
+        dest: "/tmp/dns"
+        key_file: "{{ ssh_key }}"
+      run_once: true
+      notify: cloning dns repo
+
+    - name: Copy custom.list to the Pi-hole directory on remote server
+      ansible.builtin.copy:
+        src: "/tmp/dns/custom.list"
+        dest: "/home/alex/pihole/pihole/custom.list"
+        owner: alex
+        group: alex
+        mode: '0644'
+      run_once: true
+      notify: copying dns records 
+
+    - name: Restart Pi-hole 
+      ansible.builtin.command:
+        cmd: "docker restart pihole" 
+      notify: restarting dns service
+
+    - name: cleanup
+      ansible.builtin.file:
+        path: /tmp/dns
+        state: absent
+      delegate_to: localhost
+
+  handlers:
+    - name: cloning dns repo
+      debug:
+        msg: dns repo cloned successfully
+    - name: copying dns records 
+      debug:
+        msg: copying dns records to {{ inventory_hostname }}
+    - name: restarting dns service
+      debug:
+        msg: restarting dns server on {{ inventory_hostname }}

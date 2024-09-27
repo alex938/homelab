@@ -16,8 +16,6 @@
         update_cache: yes
         force_apt_get: yes
       when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
-      async: 3600 #1hour
-      poll: 0
       notify: Updated Server
 
     - name: update and upgrade packages centos
@@ -26,8 +24,6 @@
         state: latest
         update_cache: yes
       when: ansible_distribution == "CentOS"
-      async: 3600 #1hour
-      poll: 0
       notify: Updated Server
 
     - name: Run apt-get autoclean on Debian or Ubuntu

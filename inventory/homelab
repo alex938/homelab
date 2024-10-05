@@ -7,13 +7,16 @@ alex ansible_connection=local
 [pi5servers]
 pi5-svr1.labjunkie.org #portainer1
 pi5-svr2.labjunkie.org #portainer2
+pi5-rivers.batcave.local #portainer3 
 #pi5-rivers.batcave.local (portainer3 to setup)
 
 [nas]
 nas1.labjunkie.org #new nas
+pi5-rivers.batcave.local #rivers nas
 
 [dns]
 pi5-svr2.labjunkie.org
+pi5-rivers.batcave.local
 
 [centos]
 192.168.2.34 #ansible test vm

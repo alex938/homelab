@@ -41,11 +41,27 @@
       notify: notify_disable_password_auth
       when: ping_result is succeeded
 
-    - name: Reload SSH service to apply changes
-      service:
-        name: sshd
-        state: reloaded
-      notify: notify_reload_sshd
+    - name: Remove the 'Include /etc/ssh/sshd_config.d/*.conf' line from /etc/ssh/sshd_config
+      replace:
+        path: /etc/ssh/sshd_config
+        regexp: '^Include /etc/ssh/sshd_config.d/\*\.conf'
+        replace: ''
+      ignore_errors: yes
+
+    - block:
+        - name: Reload sshd service
+          service:
+            name: sshd
+            state: reloaded
+          notify: notify_reload_sshd
+
+      rescue:
+        - name: Reload ssh service
+          service:
+            name: ssh
+            state: reloaded
+          notify: notify_reload_sshd
+
       when: ping_result is succeeded
 
   handlers:
@@ -126,8 +142,6 @@
         mode: '0440'
       notify: notify_sudoers
       when: ping_result is succeeded
-
-    # strong password set for RDP if required
 
     - name: Generate password hash from vault-stored password
       set_fact:

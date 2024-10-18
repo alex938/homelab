@@ -2,7 +2,7 @@
 alex ansible_connection=local
 
 [pi3]
-192.168.0.16
+kubecontrol.labjunkie.org
 
 [pi5servers]
 pi5-svr1.labjunkie.org #portainer1
@@ -26,6 +26,15 @@ pi5-rivers.batcave.local
 next.labjunkie.org #nexterm
 dev2.labjunkie.org #dev machine proxmox
 dev1.labjunkie.org #dev machine pi5
+kubeworker1.labjunkie.org
+kubeworker2.labjunkie.org
+kubeworker3.labjunkie.org
+
+[kube]
+kubecontrol.labjunkie.org
+kubeworker1.labjunkie.org
+kubeworker2.labjunkie.org
+kubeworker3.labjunkie.org
 
 [homelab:children]
 pi3
@@ -33,3 +42,4 @@ pi5servers
 nas
 centos
 ubuntu
+kube

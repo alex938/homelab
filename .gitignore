@@ -2,3 +2,112 @@
 **/vault.yml
 **/playbook_files
 **/playbook_files/*
+**/credentials.auto.tfvars
+
+# General
+.DS_Store
+*.log
+*.swp
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.terraform.lock.hcl
+.terraformrc
+.terraform.d
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+
+# Terraform: Ignore sensitive variable files
+terraform.tfvars         # Standard variable definitions file (could contain sensitive data)
+*.auto.tfvars            # Automatically loaded variable files (could contain credentials)
+secrets.tfvars           # Custom secrets file for Terraform
+*.auto.tfvars.json       # JSON formatted auto variable files
+credentials.auto.tfvars  # Specific credentials file (sensitive)
+
+# Ignore sensitive backend files (for remote backends)
+*.backend
+*.backend.tfvars
+
+# Ignore sensitive cloud provider credentials (AWS, Azure, GCP, etc.)
+.aws/
+.gcloud/
+.azure/
+*.pem                    # SSH private keys
+*.key                    # Generic private keys (e.g., for certificates)
+*.pfx                    # PKI certificates
+*.crt                    # Certificate files
+*.cer                    # Certificate files
+
+# VS Code
+.vscode/
+.history/
+*.code-workspace
+
+# Python
+*.py[cod]          # Byte-compiled / optimized / DLL files
+__pycache__/       # Python cache
+*.pyo
+*.pyd
+*.pyc
+*.whl              # Python wheels
+pip-log.txt        # pip log
+pip-delete-this-directory.txt
+htmlcov/           # Coverage reports
+.tox/              # tox environments
+.eggs/             # distribution tools
+*.egg-info/
+dist/
+build/
+.pytest_cache/     # pytest cache
+.coverage          # coverage reports
+
+# Python virtual environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Ignore Python environment variables
+.env
+.envrc
+
+# Ansible
+*.retry            # Ansible retry files
+roles/**/files/
+roles/**/vars/
+roles/**/defaults/
+roles/**/meta/
+roles/**/handlers/
+roles/**/tasks/
+
+# Ansible Vault
+*.vault            # Encrypted files with ansible-vault
+vault_pass.txt     # Ansible Vault password file (should never be committed)
+
+# Ansible Inventory
+#*.inventory
+#inventory/
+ansible.cfg
+
+# Credentials and Secrets
+# Generic credentials and secrets for various tools
+secrets.yaml
+secrets.json
+credentials.json
+
+# Byte-compiled / optimized / DLL files (general for all)
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.swp

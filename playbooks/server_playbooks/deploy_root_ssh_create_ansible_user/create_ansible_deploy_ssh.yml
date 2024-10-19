@@ -48,6 +48,15 @@
         replace: ''
       ignore_errors: yes
 
+    - name: Disable password authentication for SSH in cloud-init config
+      lineinfile:
+        path: /etc/ssh/sshd_config.d/50-cloud-init.conf
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+      notify: notify_disable_password_auth
+      ignore_errors: yes
+
     - block:
         - name: Reload sshd service
           service:

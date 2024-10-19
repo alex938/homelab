@@ -16,22 +16,31 @@ resource "proxmox_vm_qemu" "kubecontrol1" {
     sockets     = 2
     cpu         = "host"
     memory      = 2048
+    full_clone  = true
 
     scsihw = "virtio-scsi-single"
 
     disk {
         storage = "data1"
         type    = "disk"
-        size    = "100G"
-        slot    = "scsi0"
+        size    = "100G"     
+        slot    = "scsi0"    
         format  = "qcow2"
     }
 
+    disk {
+        storage = "data1"
+        type    = "cloudinit"
+        slot    = "scsi1"
+        format  = "qcow2"
+    }
+
+    bootdisk    = "scsi0"
     os_type     = "cloud-init"
-    ciuser      = "alex"
-    cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0" #"alex" changed via ansible scripts
+    #ciuser      = "john"
+    #cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0" #"alex" changed via ansible scripts
     ipconfig0   = "ip=192.168.2.60/24,gw=192.168.2.1"
-    nameserver  = "192.168.2.1,172.20.1.2"
+    #nameserver  = "192.168.2.12"
 
     network {
         model  = "virtio"

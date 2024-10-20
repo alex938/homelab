@@ -114,6 +114,68 @@
         state: present
       notify: sshpass installed
 
+    - name: Ensure EPEL repository is enabled on CentOS
+      yum:
+        name: epel-release
+        state: present
+      when: ansible_distribution == "CentOS"
+
+    - name: Install Ansible on Debian or Ubuntu
+      apt:
+        name: ansible
+        state: present
+      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+      notify: Ansible Installed
+
+    - name: Install Ansible on CentOS
+      yum:
+        name: ansible
+        state: present
+      when: ansible_distribution == "CentOS"
+      notify: Ansible Installed
+
+    - name: Check if Terraform is installed
+      command: terraform -version
+      register: terraform_installed
+      ignore_errors: true
+
+    - name: Ensure unzip is installed
+      apt:
+        name: unzip
+        state: present
+      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+
+    - name: Ensure unzip is installed on CentOS
+      yum:
+        name: unzip
+        state: present
+      when: ansible_distribution == "CentOS"
+
+    - name: Download Terraform binary if not installed
+      ansible.builtin.get_url:
+        url: "https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip"
+        dest: /tmp/terraform.zip
+      when: terraform_installed.rc != 0
+
+    - name: Unzip Terraform binary
+      ansible.builtin.unarchive:
+        src: /tmp/terraform.zip
+        dest: /usr/local/bin/
+        remote_src: yes
+      notify: Terraform Installed
+      when: terraform_installed.rc != 0
+
+    - name: Ensure Terraform binary is executable
+      file:
+        path: /usr/local/bin/terraform
+        mode: '0755'
+      when: terraform_installed.rc != 0
+
+    - name: Cleanup Terraform zip file
+      ansible.builtin.file:
+        path: /tmp/terraform.zip
+        state: absent
+
   handlers:
     - name: MOTD changed
       debug:
@@ -154,3 +216,15 @@
     - name: sshpass installed
       debug:
         msg: sshpass installed
+
+    - name: Ansible Installed
+      debug:
+        msg: Ansible Installed
+
+    - name: Terraform Installed
+      debug:
+        msg: Terraform Installed
+
+    - name: Terraform Version Checked
+      debug:
+        msg: "Terraform version: {{ terraform_version_result.stdout }}"

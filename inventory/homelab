@@ -2,16 +2,15 @@
 alex ansible_connection=local
 
 [pi3]
-kubecontrol.labjunkie.org
+kubeworker3.labjunkie.org
 
 [pi5servers]
 pi5-svr1.labjunkie.org #portainer1
 pi5-svr2.labjunkie.org #portainer2
 pi5-rivers.batcave.local #portainer3 
-#pi5-rivers.batcave.local (portainer3 to setup)
 
 [nas]
-nas1.labjunkie.org #new nas
+nas.labjunkie.org #new nas
 pi5-rivers.batcave.local #rivers nas
 
 [dns]
@@ -22,8 +21,6 @@ pi5-rivers.batcave.local
 192.168.2.34 #ansible test vm
 
 [ubuntu]
-192.168.2.33 #ansible test vm
-next.labjunkie.org #nexterm
 dev2.labjunkie.org #dev machine proxmox
 dev1.labjunkie.org #dev machine pi5
 kubeworker1.labjunkie.org

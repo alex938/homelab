@@ -1,0 +1,29 @@
+---
+- name: shutdown of hosts
+  hosts: homelab
+  become: true
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Ping the host
+      ansible.builtin.ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Gather facts
+      ansible.builtin.setup:
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: immediate system shutdown
+      command: shutdown -h now
+      when: ping_result.ping is defined and ping_result.ping == 'pong' and ansible_distribution in ["Debian", "Ubuntu", "Kali"]
+      async: 1
+      poll: 0
+      register: shutdown_result
+
+    - name: Debug shutdown result
+      debug:
+        var: shutdown_result

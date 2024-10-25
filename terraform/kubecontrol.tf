@@ -37,8 +37,8 @@ resource "proxmox_vm_qemu" "kubecontrol1" {
 
     bootdisk    = "scsi0"
     os_type     = "cloud-init"
-    #ciuser      = "john"
-    #cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0" #"alex" changed via ansible scripts
+    ciuser      = "alex"
+    cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0" #"alex" changed via ansible scripts
     ipconfig0   = "ip=192.168.2.60/24,gw=192.168.2.1"
     #nameserver  = "192.168.2.12"
 

@@ -3,7 +3,7 @@
   hosts: dns
   become: true
   vars_files:
-    - vault.yml
+    - vault2.yml
 
   tasks:
     - name: Clone the private repository from GitHub

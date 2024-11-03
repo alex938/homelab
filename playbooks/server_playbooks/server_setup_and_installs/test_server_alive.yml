@@ -2,7 +2,7 @@
 - hosts: homelab
   become: yes
   vars_files:
-    - vault.yml
+    - vault2.yml
     
   tasks:
     - name: Test connection

@@ -3,7 +3,7 @@
   hosts: homelab
   become: true
   vars_files:
-    - vault.yml
+    - vault2.yml
 
   tasks:
     - name: Run Docker system prune

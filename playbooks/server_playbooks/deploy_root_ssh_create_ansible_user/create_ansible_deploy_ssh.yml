@@ -4,7 +4,7 @@
   become: true
   gather_facts: true
   vars_files:
-    - vault.yml
+    - vault1.yml
 
   tasks:
     - name: Ping the host
@@ -95,7 +95,7 @@
   become: true
   gather_facts: true
   vars_files:
-    - vault.yml
+    - vault1.yml
 
   tasks:
     - name: Ping the host
@@ -152,7 +152,7 @@
       notify: notify_sudoers
       when: ping_result is succeeded
 
-    - name: Generate password hash from vault-stored password
+    - name: Generate password hash from vault1-stored password
       set_fact:
         hashed_password: "{{ new_super_password | password_hash('sha512') }}"
       notify: hash_new_super_user_password

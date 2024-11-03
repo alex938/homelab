@@ -1,5 +1,6 @@
 .vscode
 **/vault.yml
+**/vault*.yml
 **/playbook_files
 **/playbook_files/*
 **/credentials.auto.tfvars
@@ -90,7 +91,7 @@ roles/**/handlers/
 roles/**/tasks/
 
 # Ansible Vault
-*.vault            # Encrypted files with ansible-vault
+*.vault*            # Encrypted files with ansible-vault
 vault_pass.txt     # Ansible Vault password file (should never be committed)
 
 # Ansible Inventory

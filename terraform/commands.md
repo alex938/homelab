@@ -1,20 +1,24 @@
-# Setup
+# Proxmox VM Deployment with Terraform
 
-credentials.auto.tfvars
-```
-proxmox_api_url = "https://192.168.2.35:8006/api2/json"
-proxmox_api_token_id = ""
-proxmox_api_token_secret = ""
-```
+## Setup
 
+1. **Create Credentials File**:  
+   Set up `credentials.auto.tfvars` with the Proxmox API credentials. Replace the placeholder values as necessary.
 
-```
-terraform init
-terraform plan
+   ```hcl
+   proxmox_api_url         = "https://192.168.2.35:8006/api2/json"
+   proxmox_api_token_id    = ""
+   proxmox_api_token_secret = ""
+   ```
 
-Destroy:
-terraform apply -var="create_dev2_vm=false" -auto-approve -target=proxmox_vm_qemu.dev2_labjunkie_org
+2. **Setting up state, creating and destroying infrastructure**:  
+    ```hcl
+    terraform init
+    terraform plan
 
-Create:
-terraform apply -var="create_dev2_vm=true" -auto-approve -target=proxmox_vm_qemu.dev2_labjunkie_org
-```
+    Destroy:
+    terraform apply -var="create_dev2_vm=false" -auto-approve -target=proxmox_vm_qemu.dev2_labjunkie_org
+
+    Create:
+    terraform apply -var="create_dev2_vm=true" -auto-approve -target=proxmox_vm_qemu.dev2_labjunkie_org
+    ```

@@ -17,9 +17,15 @@
         msg: "Host {{ inventory_hostname }} is running {{ ansible_distribution }}"
       when: ping_result is not failed
 
+    - name: Ensure libasound2t64 vscode dependency is installed
+      apt:
+        name:
+          - libasound2t64
+        state: latest
+
     - name: copy vscode .deb package to host
       copy:
-        src: /mnt/nas1/datastore1/software/code_amd64.deb
+        src: /mnt/share1/software/code_amd64.deb
         #src: playbook_files/terminator_2.1.4-3_all.deb
         dest: /tmp/code.deb
       notify: Copy vscode installer

@@ -10,7 +10,7 @@ pi5-svr2.labjunkie.org #portainer2
 pi5-rivers.batcave.local #portainer3 
 
 [nas]
-nas.labjunkie.org #new nas
+nas.batcave.local #synology
 pi5-rivers.batcave.local #rivers nas
 
 [dns]

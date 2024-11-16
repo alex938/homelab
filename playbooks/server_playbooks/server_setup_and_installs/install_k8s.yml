@@ -11,13 +11,29 @@
         name: curl
         state: present
 
-    - name: Download and execute k8s install and cluster init script
+    - name: Download Kubernetes install script to the remote server
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/alex938/docker-with-kubernetes-swarm/refs/heads/main/Kubernetes/install_k8s.sh
+        dest: /tmp/install_k8s.sh
+        mode: '0755'
+
+    - name: Execute Kubernetes install script
       ansible.builtin.shell: |
-        curl -fsSL https://raw.githubusercontent.com/alex938/docker-with-kubernetes-swarm/refs/heads/main/Kubernetes/install_k8s.sh | sh
-      args:
-        executable: /bin/sh
+        sudo -u alex /bin/bash /tmp/install_k8s.sh
       register: install_script_result
 
-    - name: Show script output
+    - name: Extract kubeadm join command
+      ansible.builtin.set_fact:
+        kubeadm_join_command: "{{ install_script_result.stdout | regex_search('kubeadm join.*', multiline=True) }}"
+
+    - name: Extract discovery-token-ca-cert-hash
+      ansible.builtin.set_fact:
+        discovery_token_hash: "{{ install_script_result.stdout | regex_search('--discovery-token-ca-cert-hash sha256:[a-f0-9]+', multiline=True) }}"
+
+    - name: Show kubeadm join command
       ansible.builtin.debug:
-        var: install_script_result.stdout
+        msg: "Kubeadm join command: {{ kubeadm_join_command }}"
+
+    - name: Show discovery token CA cert hash
+      ansible.builtin.debug:
+        msg: "Discovery token CA cert hash: {{ discovery_token_hash }}"

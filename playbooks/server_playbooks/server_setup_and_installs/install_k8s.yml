@@ -1,0 +1,23 @@
+---
+- name: Install k8s and init cluster
+  hosts: homelab
+  become: true
+  vars_files:
+    - vault2.yml
+
+  tasks:
+    - name: Ensure curl is installed
+      ansible.builtin.package:
+        name: curl
+        state: present
+
+    - name: Download and execute k8s install and cluster init script
+      ansible.builtin.shell: |
+        curl -fsSL https://raw.githubusercontent.com/alex938/docker-with-kubernetes-swarm/refs/heads/main/Kubernetes/install_k8s.sh | sh
+      args:
+        executable: /bin/sh
+      register: install_script_result
+
+    - name: Show script output
+      ansible.builtin.debug:
+        var: install_script_result.stdout

@@ -1,0 +1,43 @@
+---
+- name: Check for reboot required
+  hosts: homelab
+  gather_facts: false
+  vars_files:
+    - vault2.yml
+
+  tasks:
+    - name: Check ansible_user
+      debug:
+        var: ansible_user
+
+    - name: Ping the host
+      ansible.builtin.ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Gather facts
+      ansible.builtin.setup:
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Check if system needs a reboot (Debian-based)
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Check if system needs a reboot (RHEL-based)
+      shell: "needs-restarting -r"
+      register: rhel_reboot_check
+      failed_when: false
+      changed_when: false
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Display reboot requirement
+      ansible.builtin.debug:
+        msg: |
+          Host needs reboot: {{
+            (reboot_required.stat.exists | default(false)) or
+            (rhel_reboot_check.rc == 1 | default(false))
+          }}
+      when: ping_result.ping is defined and ping_result.ping == 'pong'

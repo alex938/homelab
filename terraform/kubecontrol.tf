@@ -1,10 +1,10 @@
-variable "create_kubecontrol_vm" {
+variable "create_kubecontrol1_vm" {
   type    = bool
   default = true
 }
 
 resource "proxmox_vm_qemu" "kubecontrol1" {
-    count       = var.create_kubecontrol_vm ? 1 : 0
+    count       = var.create_kubecontrol1_vm ? 1 : 0
     name        = "kubecontrol1"
     desc        = "kubernetes control server 1"
     vmid        = "201"

@@ -27,17 +27,19 @@
       when: ping_result is not failed
       notify: MOTD changed
 
-    - name: Ensure nameserver 192.168.2.12 is present
-      lineinfile:
-        path: /etc/resolv.conf
-        line: "nameserver 192.168.2.12"
-        insertafter: EOF
+    - name: Configure systemd-resolved DNS servers
+      copy:
+        dest: /etc/systemd/resolved.conf
+        content: |
+          [Resolve]
+          DNS=192.168.2.12 172.20.1.2
+      notify: Restart systemd-resolved
 
-    - name: Ensure nameserver 172.20.1.2 is present
-      lineinfile:
-        path: /etc/resolv.conf
-        line: "nameserver 172.20.1.2"
-        insertafter: EOF
+    - name: Restart systemd-resolved
+      systemd:
+        name: systemd-resolved
+        state: restarted
+      when: ansible_facts.services['systemd-resolved']
 
     - name: update and upgrade packages on debian or ubuntu
       apt:

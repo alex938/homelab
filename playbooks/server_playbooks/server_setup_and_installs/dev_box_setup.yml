@@ -59,17 +59,12 @@
       #when: docker_installed.rc != 0 and ping_result is not failed
       #notify: Docker Script Downloaded
 
-    - name: Ensure nameserver 192.168.2.12 is present
-      lineinfile:
-        path: /etc/resolv.conf
-        line: "nameserver 192.168.2.12"
-        insertafter: EOF
-
-    - name: Ensure nameserver 172.20.1.2 is present
-      lineinfile:
-        path: /etc/resolv.conf
-        line: "nameserver 172.20.1.2"
-        insertafter: EOF
+    - name: Update resolv.conf with DNS servers
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          nameserver 192.168.2.12
+          nameserver 172.20.1.2
 
     - name: Ensure curl is installed
       ansible.builtin.package:

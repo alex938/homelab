@@ -1,9 +1,6 @@
 [control]
 alex ansible_connection=local
 
-[pi3]
-kubeworker3.labjunkie.org
-
 [pi5servers]
 pi5-svr1.labjunkie.org #portainer1
 pi5-svr2.labjunkie.org #portainer2
@@ -24,15 +21,23 @@ pi5-rivers.batcave.local
 dev2.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #dev machine proxmox
 dev1.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #dev pi5
 
-[kube]
-kubecontrol1.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #kubernetes control plane proxmox ms01
-kubecontrol2.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #kubernetes control plane proxmox ms01
+[kworkers]
+kw1.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+kw2.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" 
+
+[k8slb]
 k8slb.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #kubernetes load balancer proxmox ms01
 
+[kcontrollers]
+k.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
 [homelab:children]
-pi3
 pi5servers
 nas
 centos
 ubuntu
-kube
+
+[k8s:children]
+kworkers
+k8slb
+kcontrollers

@@ -1,6 +1,6 @@
 ---
 - name: Setup initial user
-  hosts: homelab
+  hosts: homelab:k8s
   become: true
   gather_facts: true
   vars_files:
@@ -91,7 +91,7 @@
         msg: "SSHD service reloaded on {{ hostvars[inventory_hostname]['ansible_hostname'] }}"
 
 - name: Setup ansible user on servers and change super user password
-  hosts: homelab
+  hosts: homelab:k8s
   become: true
   gather_facts: true
   vars_files:

@@ -1,6 +1,6 @@
 ---
 - name: shutdown of hosts
-  hosts: homelab
+  hosts: homelab:k8s
   become: true
   gather_facts: false
   vars_files:

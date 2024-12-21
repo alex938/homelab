@@ -1,6 +1,6 @@
 ---
 - name: Gather and print all facts for servers
-  hosts: homelab
+  hosts: homelab:k8s
   become: true
   vars_files:
     - vault2.yml

@@ -39,7 +39,7 @@ resource "proxmox_vm_qemu" "kubecontrol1" {
     os_type     = "cloud-init"
     ciuser      = "alex"
     cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0" #"alex" changed via ansible scripts
-    ipconfig0   = "ip=192.168.2.52/24,gw=192.168.2.1,dns=192.168.2.12,172.20.1.2"
+    ipconfig0   = "ip=192.168.2.55/24,gw=192.168.2.1,dns=192.168.2.12,172.20.1.2"
 
     network {
         model  = "virtio"

@@ -1,5 +1,5 @@
 ---
-- hosts: homelab
+- hosts: homelab:k8s
   become: yes
   vars_files:
     - vault2.yml

@@ -1,6 +1,6 @@
 ---
 - name: Gather facts from servers
-  hosts: homelab
+  hosts: homelab:k8s
   gather_facts: false
   vars_files:
     - vault2.yml

@@ -1,0 +1,21 @@
+---
+- name: Install QEMU agent for proxmox control
+  hosts: homelab:k8s
+  become: true
+  vars_files:
+    - vault2.yml
+
+  tasks:
+    - name: Install qemu-guest-agent
+      apt:
+        name: qemu-guest-agent
+        state: present
+        update_cache: yes
+      when: ansible_distribution in ["Ubuntu", "Debian"]
+
+    - name: Ensure qemu-guest-agent is running and enabled
+      systemd:
+        name: qemu-guest-agent
+        state: started
+        enabled: true
+      when: ansible_distribution in ["Ubuntu", "Debian"]

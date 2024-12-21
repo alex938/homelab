@@ -31,11 +31,19 @@ k8slb.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o User
 [kcontrollers]
 k.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
+[proxmox]
+dev2.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+k.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+kw1.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+kw2.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" 
+k8slb.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
 [homelab:children]
 pi5servers
 nas
 centos
 ubuntu
+proxmox
 
 [k8s:children]
 kworkers

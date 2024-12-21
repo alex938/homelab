@@ -1,6 +1,6 @@
 ---
 - name: Install k8s and init cluster
-  hosts: homelab
+  hosts: homelab:k8s
   become: true
   vars_files:
     - vault2.yml
@@ -13,7 +13,7 @@
 
     - name: Download Kubernetes install script to the remote server
       ansible.builtin.get_url:
-        url: https://raw.githubusercontent.com/alex938/docker-with-kubernetes-swarm/refs/heads/main/Kubernetes/install_k8s.sh
+        url: https://raw.githubusercontent.com/alex938/docker-with-kubernetes-swarm/refs/heads/main/Kubernetes/install_k8s_control.sh
         dest: /tmp/install_k8s.sh
         mode: '0755'
 
@@ -24,7 +24,11 @@
 
     - name: Extract kubeadm join command
       ansible.builtin.set_fact:
-        kubeadm_join_command: "{{ install_script_result.stdout | regex_search('kubeadm join.*', multiline=True) }}"
+        kubeadm_join_command: >-
+          {{
+            install_script_result.stdout
+            | regex_search('kubeadm join[\\s\\S]*--discovery-token-ca-cert-hash.*', multiline=True)
+          }}
 
     - name: Extract discovery-token-ca-cert-hash
       ansible.builtin.set_fact:

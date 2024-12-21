@@ -1,0 +1,23 @@
+---
+- name: Install k8s workers
+  hosts: homelab:k8s
+  become: true
+  vars_files:
+    - vault2.yml
+
+  tasks:
+    - name: Ensure curl is installed
+      ansible.builtin.package:
+        name: curl
+        state: present
+
+    - name: Download Kubernetes install script to the remote server
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/alex938/docker-with-kubernetes-swarm/refs/heads/main/Kubernetes/install_k8s_worker.sh
+        dest: /tmp/install_k8s_worker.sh
+        mode: '0755'
+
+    - name: Execute Kubernetes install script
+      ansible.builtin.shell: |
+        sudo -u alex /bin/bash /tmp/install_k8s_worker.sh
+      register: install_script_result

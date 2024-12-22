@@ -22,22 +22,10 @@
         sudo -u alex /bin/bash /tmp/install_k8s.sh
       register: install_script_result
 
-    - name: Extract kubeadm join command
-      ansible.builtin.set_fact:
-        kubeadm_join_command: >-
-          {{
-            install_script_result.stdout
-            | regex_search('kubeadm join[\\s\\S]*--discovery-token-ca-cert-hash.*', multiline=True)
-          }}
+    - name: Retrieve Kubeadm join command
+      command: kubeadm token create --print-join-command
+      register: join_command
 
-    - name: Extract discovery-token-ca-cert-hash
-      ansible.builtin.set_fact:
-        discovery_token_hash: "{{ install_script_result.stdout | regex_search('--discovery-token-ca-cert-hash sha256:[a-f0-9]+', multiline=True) }}"
-
-    - name: Show kubeadm join command
-      ansible.builtin.debug:
-        msg: "Kubeadm join command: {{ kubeadm_join_command }}"
-
-    - name: Show discovery token CA cert hash
-      ansible.builtin.debug:
-        msg: "Discovery token CA cert hash: {{ discovery_token_hash }}"
+    - name: Show join command
+      debug:
+        msg: "Kubeadm join command: {{ join_command.stdout }}"

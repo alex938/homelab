@@ -25,14 +25,14 @@ resource "proxmox_vm_qemu" "kw2" {
         type    = "disk"
         size    = "100G"     
         slot    = "scsi0"    
-        format  = "qcow2"
+        format  = "raw"
     }
 
     disk {
         storage = "local-lvm"
         type    = "cloudinit"
         slot    = "scsi1"
-        format  = "qcow2"
+        format  = "raw" #Changed from "qcow2" to "raw" to avoid error proxmox when using local-lvm storage, Proxmox stores VM disks as raw volumes
     }
 
     bootdisk    = "scsi0"

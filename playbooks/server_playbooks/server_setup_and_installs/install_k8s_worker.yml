@@ -11,6 +11,11 @@
         name: curl
         state: present
 
+    - name: Ensure NFS tools are installed
+      ansible.builtin.package:
+        name: nfs-common
+        state: present
+
     - name: Download Kubernetes install script to the remote server
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/alex938/docker-with-kubernetes-swarm/refs/heads/main/Kubernetes/install_k8s_worker.sh

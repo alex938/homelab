@@ -10,7 +10,7 @@ resource "proxmox_vm_qemu" "kubecontrol1" {
     vmid        = "201"
     target_node = "ms01"
 
-    agent       = 1
+    agent       = 0
     clone       = "ubuntubase"
     cores       = 2
     sockets     = 2

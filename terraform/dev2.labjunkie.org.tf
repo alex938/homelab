@@ -10,7 +10,7 @@ resource "proxmox_vm_qemu" "dev2_labjunkie_org" {
     vmid        = "100"
     target_node = "ms01"
 
-    agent       = 1
+    agent       = 0
     clone       = "ubuntubase"
     cores       = 4
     sockets     = 2

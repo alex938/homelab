@@ -10,7 +10,9 @@ resource "proxmox_vm_qemu" "kw2" {
     vmid        = "401"
     target_node = "aio1"
 
-    agent       = 1
+    depends_on = [proxmox_vm_qemu.kw1]
+
+    agent       = 0
     clone       = "ubuntubase2"
     cores       = 2
     sockets     = 2

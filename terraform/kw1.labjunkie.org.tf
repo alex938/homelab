@@ -10,7 +10,9 @@ resource "proxmox_vm_qemu" "kw1" {
     vmid        = "301"
     target_node = "b01"
 
-    agent       = 1
+    depends_on = [proxmox_vm_qemu.k8slb]
+
+    agent       = 0
     clone       = "ubuntubase2"
     cores       = 2
     sockets     = 2

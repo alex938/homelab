@@ -10,7 +10,9 @@ resource "proxmox_vm_qemu" "k8slb" {
     vmid        = "205"
     target_node = "ms01"
 
-    agent       = 1
+    depends_on = [proxmox_vm_qemu.kubecontrol1]
+
+    agent       = 0
     clone       = "ubuntubase"
     cores       = 2
     sockets     = 2

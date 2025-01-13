@@ -20,9 +20,7 @@ fi
 while IFS= read -r line; do
   if [[ $line =~ ^alias ]]; then
     alias_name=$(echo "$line" | cut -d' ' -f2 | cut -d'=' -f1)
-    
     sed -i "/alias $alias_name=/d" "$BASHRC_FILE"
-    
     echo "$line" >> "$BASHRC_FILE"
     echo "Added or updated alias: $line"
   fi

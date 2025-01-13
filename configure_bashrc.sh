@@ -1,9 +1,8 @@
 #!/bin/bash
 
 ALIAS_URL="https://raw.githubusercontent.com/alex938/homelab/refs/heads/main/alias.txt"
-
 BASHRC_FILE="$HOME/.bashrc"
-ALIAS_MARKER="# Custom Aliases (Auto-Generated)"
+ALIAS_MARKER="# Custom Aliases"
 TEMP_FILE="/tmp/alias_list.txt"
 
 if ! grep -q "$ALIAS_MARKER" "$BASHRC_FILE"; then

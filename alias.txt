@@ -1,0 +1,4 @@
+alias k='kubectl'
+alias h='helm'
+alias d='docker'
+alias g='git'

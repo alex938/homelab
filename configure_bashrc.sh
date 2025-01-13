@@ -26,5 +26,4 @@ fi
   fi
 done; } < "$TEMP_FILE"
 
-source "$BASHRC_FILE"
-echo ".bashrc reloaded with new aliases."
+echo "Aliases updated in ~/.bashrc. Please run 'source ~/.bashrc' to apply the changes."

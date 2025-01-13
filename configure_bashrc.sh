@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ALIAS_URL="https://raw.githubusercontent.com/alex938/homelab/refs/heads/main/alias.txt"
+
 BASHRC_FILE="$HOME/.bashrc"
 ALIAS_MARKER="# Custom Aliases"
 TEMP_FILE="/tmp/alias_list.txt"
@@ -27,5 +28,4 @@ while IFS= read -r line; do
   fi
 done < "$TEMP_FILE"
 
-source "$BASHRC_FILE"
-echo ".bashrc reloaded with new aliases."
+echo "Aliases updated in ~/.bashrc. Please run 'source ~/.bashrc' to apply the changes."

@@ -17,13 +17,14 @@ if [ ! -s "$TEMP_FILE" ]; then
   exit 1
 fi
 
-while IFS= read -r line; do
+{ while IFS= read -r line || [ -n "$line" ]; do
   if [[ $line =~ ^alias ]]; then
     alias_name=$(echo "$line" | cut -d' ' -f2 | cut -d'=' -f1)
     sed -i "/alias $alias_name=/d" "$BASHRC_FILE"
     echo "$line" >> "$BASHRC_FILE"
     echo "Added or updated alias: $line"
   fi
-done < "$TEMP_FILE"
+done; } < "$TEMP_FILE"
 
-echo "Aliases updated in ~/.bashrc. Please run 'source ~/.bashrc' to apply the changes."
+source "$BASHRC_FILE"
+echo ".bashrc reloaded with new aliases."

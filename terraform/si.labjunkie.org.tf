@@ -1,47 +1,45 @@
-variable "create_kw1_vm" {
+variable "create_si_vm" {
   type    = bool
   default = true
 }
 
-resource "proxmox_vm_qemu" "kw1" {
-    count       = var.create_kw1_vm ? 1 : 0
-    name        = "kw1.labjunkie.org"
-    desc        = "kw1.labjunkie.org"
-    vmid        = "202"
-    target_node = "b01"
-
-    depends_on = [proxmox_vm_qemu.k8slb]
+resource "proxmox_vm_qemu" "si" {
+    count       = var.create_si_vm ? 1 : 0
+    name        = "si.labjunkie.org"
+    desc        = "si.labjunkie.org"
+    vmid        = "510"
+    target_node = "ms01"
 
     agent       = 1
-    clone       = "ubuntubase2"
-    cores       = 2
+    clone       = "ubuntubase"
+    cores       = 4
     sockets     = 2
     cpu         = "host"
-    memory      = 2048
+    memory      = 4096
     full_clone  = true
 
     scsihw = "virtio-scsi-single"
 
     disk {
-        storage = "local-lvm"
+        storage = "data1"
         type    = "disk"
         size    = "100G"     
         slot    = "scsi0"    
-        format  = "raw"
+        format  = "qcow2"
     }
 
     disk {
-        storage = "local-lvm"
+        storage = "data1"
         type    = "cloudinit"
         slot    = "scsi1"
-        format  = "raw"
+        format  = "qcow2"
     }
 
     bootdisk    = "scsi0"
     os_type     = "cloud-init"
     ciuser      = "alex"
     cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0" #"alex" changed via ansible scripts
-    ipconfig0   = "ip=192.168.2.51/24,gw=192.168.2.1,dns=192.168.2.12,172.20.1.2"
+    ipconfig0   = "ip=192.168.2.60/24,gw=192.168.2.1,dns=192.168.2.12,172.20.1.2"
 
     network {
         model  = "virtio"

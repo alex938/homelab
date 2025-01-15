@@ -1,45 +1,45 @@
-variable "create_dev2_vm" {
+variable "create_shf_vm" {
   type    = bool
   default = true
 }
 
-resource "proxmox_vm_qemu" "dev2_labjunkie_org" {
-    count       = var.create_dev2_vm ? 1 : 0
-    name        = "dev2.labjunkie.org"
-    desc        = "dev2.labjunkie.org"
-    vmid        = "100"
-    target_node = "ms01"
+resource "proxmox_vm_qemu" "shf" {
+    count       = var.create_shf_vm ? 1 : 0
+    name        = "shf.labjunkie.org"
+    desc        = "shf.labjunkie.org"
+    vmid        = "511"
+    target_node = "aio1"
 
-    agent       = 0
-    clone       = "ubuntubase"
-    cores       = 4
+    agent       = 1
+    clone       = "ubuntubase2"
+    cores       = 2
     sockets     = 2
     cpu         = "host"
-    memory      = 4096
+    memory      = 2048
     full_clone  = true
 
     scsihw = "virtio-scsi-single"
 
     disk {
-        storage = "data1"
+        storage = "local-lvm"
         type    = "disk"
         size    = "100G"     
         slot    = "scsi0"    
-        format  = "qcow2"
+        format  = "raw"
     }
 
     disk {
-        storage = "data1"
+        storage = "local-lvm"
         type    = "cloudinit"
         slot    = "scsi1"
-        format  = "qcow2"
+        format  = "raw" #Changed from "qcow2" to "raw" to avoid error proxmox when using local-lvm storage, Proxmox stores VM disks as raw volumes
     }
 
     bootdisk    = "scsi0"
     os_type     = "cloud-init"
     ciuser      = "alex"
     cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0" #"alex" changed via ansible scripts
-    ipconfig0   = "ip=192.168.2.47/24,gw=192.168.2.1,dns=192.168.2.12,172.20.1.2"
+    ipconfig0   = "ip=192.168.2.61/24,gw=192.168.2.1,dns=192.168.2.12,172.20.1.2"
 
     network {
         model  = "virtio"

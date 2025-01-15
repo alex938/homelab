@@ -7,12 +7,12 @@ resource "proxmox_vm_qemu" "kw2" {
     count       = var.create_kw2_vm ? 1 : 0
     name        = "kw2.labjunkie.org"
     desc        = "kw2.labjunkie.org"
-    vmid        = "401"
+    vmid        = "203"
     target_node = "aio1"
 
     depends_on = [proxmox_vm_qemu.kw1]
 
-    agent       = 0
+    agent       = 1
     clone       = "ubuntubase2"
     cores       = 2
     sockets     = 2

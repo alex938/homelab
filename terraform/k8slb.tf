@@ -12,7 +12,7 @@ resource "proxmox_vm_qemu" "k8slb" {
 
     depends_on = [proxmox_vm_qemu.kubecontrol1]
 
-    agent       = 0
+    agent       = 1
     clone       = "ubuntubase"
     cores       = 2
     sockets     = 2

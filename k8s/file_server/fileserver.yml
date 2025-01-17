@@ -4,37 +4,48 @@ metadata:
   name: nginx-config
 data:
   nginx.conf: |
-    server {
-        listen 80;
-        server_name localhost;
+    worker_processes 5;
 
-        location / {
-            root /usr/share/nginx/html;
-            autoindex on;                    
-            autoindex_exact_size off;        
-            autoindex_localtime on;           
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        server {
+            listen 80;
+            server_name localhost;
+
+            location / {
+                root /usr/share/nginx/html;
+                autoindex on;
+                autoindex_exact_size off;
+                autoindex_localtime on;
+            }
         }
     }
 ---
 apiVersion: v1
-kind: pv_software
+kind: PersistentVolume
 metadata:
-  name: software-pv
+  name: software-volume
+  labels:
+    type: shared
 spec:
-  storageClassName: manual
+  storageClassName: ""
   capacity:
-    storage: 1Gi
+    storage: 5Gi
   accessModes:
     - ReadWriteMany
-  hostPath:
+  nfs:
     path: /volume1/share1/software
+    server: nas.batcave.local
 ---
 apiVersion: v1
-kind: pvc_software
+kind: PersistentVolumeClaim
 metadata:
   name: software-pvc
 spec:
-  storageClassName: manual
+  storageClassName: ""
   accessModes:
     - ReadWriteMany
   resources:
@@ -46,7 +57,7 @@ kind: Deployment
 metadata:
   name: nginx-deployment
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: nginx

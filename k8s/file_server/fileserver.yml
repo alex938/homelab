@@ -10,7 +10,7 @@ data:
 
         location / {
             root /usr/share/nginx/html;
-            autoindex on;                     
+            autoindex on;                    
             autoindex_exact_size off;        
             autoindex_localtime on;           
         }

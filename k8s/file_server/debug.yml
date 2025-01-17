@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug-pod
+spec:
+  containers:
+    - name: debug-container
+      image: busybox
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - name: certs-volume
+          mountPath: /etc/nginx/certs
+  volumes:
+    - name: certs-volume
+      nfs:
+        path: /volume1/k8s/certs/live/software.labjunkie.org
+        server: nas.batcave.local

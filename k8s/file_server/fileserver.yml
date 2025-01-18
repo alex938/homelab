@@ -22,7 +22,7 @@ data:
             listen 443 ssl;
             server_name software.labjunkie.org;
 
-            ssl_certificate /etc/nginx/certs/cert1.pem;
+            ssl_certificate /etc/nginx/certs/fullchain1.pem;
             ssl_certificate_key /etc/nginx/certs/privkey1.pem;
 
             location / {

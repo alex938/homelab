@@ -1,0 +1,35 @@
+namespace: splunk
+
+global:
+  splunk:
+    hec:
+      host: 192.168.2.61
+      port: 8088
+      ssl: false
+      protocol: "http"  #set this to 'http' or 'https'
+
+splunk-kubernetes-metrics:
+  splunk:
+    hec:
+      indexName: kubernetes_metrics
+      token: "567f42e8-3976-48f3-8cf8-c3954f6e7704"  #replace with actual token
+
+splunk-kubernetes-objects:
+  splunk:
+    hec:
+      indexName: kubernetes_logs
+      token: "567f42e8-3976-48f3-8cf8-c3954f6e7704"  #replace with actual token
+
+metrics:
+  enabled: true
+  namespaces:
+    include:
+      - "default"
+      - "splunk"
+
+objects:
+  enabled: true
+  namespaces:
+    include:
+      - "default"
+      - "splunk"

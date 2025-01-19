@@ -112,3 +112,6 @@ credentials.json
 *.o
 *.so
 *.swp
+
+# Kubernetes
+**/*-secret.yml

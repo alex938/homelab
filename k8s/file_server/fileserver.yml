@@ -11,6 +11,12 @@ data:
     }
 
     http {
+      log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$remote_addr"';
+
+        access_log /usr/share/nginx/logs/access-$HOSTNAME.log main;
+        
         server {
             listen 80;
             server_name software.labjunkie.org;
@@ -62,29 +68,64 @@ spec:
     requests:
       storage: 5Mi
 ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-volume
+  labels:
+    type: shared
+spec:
+  storageClassName: ""  #explicitly disable dynamic provisioning
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /volume1/share1/logs/fileserver
+    server: nas.batcave.local
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-pvc
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-deployment
+  name: fileserver-nginx-deployment
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: nginx
+      app: fileserver
   template:
     metadata:
       labels:
-        app: nginx
+        app: fileserver
     spec:
       containers:
-        - name: nginx
-          image: nginx:1.17.3
+        - name: fileserver
+          image: nginx:1.26.2
           ports:
             - containerPort: 80
             - containerPort: 443
+          env:
+          - name: HOSTNAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
           volumeMounts:
             - name: software-volume
               mountPath: /usr/share/nginx/html
+            - name: logs-volume
+              mountPath: /usr/share/nginx/logs
             - name: nginx-config-volume # not really a volume, just kubernetes terminology
               mountPath: /etc/nginx/nginx.conf
               subPath: nginx.conf
@@ -94,6 +135,9 @@ spec:
         - name: software-volume
           persistentVolumeClaim:
             claimName: software-pvc
+        - name: logs-volume
+          persistentVolumeClaim:
+            claimName: logs-pvc
         - name: nginx-config-volume
           configMap:
             name: nginx-config
@@ -105,7 +149,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-service
+  name: fileserver-nginx-service
 spec:
   type: NodePort
   ports:
@@ -118,4 +162,4 @@ spec:
       targetPort: 443
       nodePort: 30021
   selector:
-    app: nginx
+    app: fileserver

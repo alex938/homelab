@@ -1,0 +1,81 @@
+---
+- name: Setup for kali command box
+  hosts: training
+  become: true
+  vars_files:
+    - vault.yml
+
+  vars:
+    motd_debian: "*** command.training.org - no unauthorised access ***\n"
+
+  tasks:
+    - name: Update and upgrade packages
+      apt:
+        update_cache: yes
+        upgrade: safe
+
+    - name: Set the MOTD
+      copy:
+        content: "{{ motd_debian }}"
+        dest: /etc/motd
+        mode: '0644'
+
+    - name: Install required packages
+      apt:
+        name:
+          - xrdp
+          - sshpass
+          - curl
+          - vim
+          - unzip
+          - ansible
+        state: present
+
+    - name: Enable and start XRDP
+      systemd:
+        name: xrdp
+        enabled: yes
+        state: started
+
+    - name: Enable and start Sesman
+      systemd:
+        name: xrdp-sesman
+        enabled: yes
+        state: started
+
+    - name: Install Docker
+      apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+
+    - name: Add Docker repository
+      copy:
+        content: "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+        dest: /etc/apt/sources.list.d/docker.list
+
+    - name: Install Docker CE
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    - name: Install Terraform
+      get_url:
+        url: "https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip"
+        dest: /tmp/terraform.zip
+
+    - name: Unzip and move Terraform
+      unarchive:
+        src: /tmp/terraform.zip
+        dest: /usr/local/bin/
+        remote_src: yes
+
+    - name: Ensure Terraform binary is executable
+      file:
+        path: /usr/local/bin/terraform
+        mode: '0755'
+
+    - name: Cleanup Terraform zip file
+      file:
+        path: /tmp/terraform.zip
+        state: absent

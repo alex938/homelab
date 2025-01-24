@@ -1,0 +1,6 @@
+---
+ansible_port: 22
+ansible_user: command
+ansible_become_password: "{{ command_password }}" 
+ansible_ssh_pass: "{{ command_password }}"
+...

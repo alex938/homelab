@@ -4,7 +4,7 @@
   become: true
   vars_files:
     - vault.yml
-    - group_vars/training.yml
+    - training.yml
 
   tasks:
     - name: Ping the host

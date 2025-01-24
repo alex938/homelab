@@ -1,26 +1,44 @@
 [control]
-alex ansible_connection=local
+command ansible_connection=local
 
 [kali1]
-192.168.1.33 training_subnet_ip=192.168.1.201
+kali1.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [kali2]
-192.168.1.34 training_subnet_ip=192.168.1.201
+kali2.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [kali3]
-192.168.1.35 training_subnet_ip=192.168.1.202
+kali3.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [kali4]
-192.168.1.36 training_subnet_ip=192.168.1.203
+kali4.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [kali5]
-192.168.1.37 training_subnet_ip=192.168.1.204
+kali5.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [kali6]
-192.168.1.38 training_subnet_ip=192.168.1.205
+kali6.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+[kali7]
+kali7.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+[kali8]
+kali8.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+[kali9]
+kali9.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+[kali10]
+kali10.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [sliversvr]
-192.168.1.250 
+sliversvr.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+[command]
+command.training.org
+
+[services]
+services.training.org
 
 [training:children]
 kali1
@@ -29,8 +47,12 @@ kali3
 kali4
 kali5
 kali6
+kali7
+kali8
+kali9
+kali10
 sliversvr
 
 [control:children]
-guac
-control
+services
+command

@@ -1,14 +1,36 @@
 ---
-- name: Setup for kali command box
-  hosts: training
+- name: Setup for command box
+  hosts: command_group
   become: true
   vars_files:
     - vault.yml
 
   vars:
     motd_debian: "*** command.training.org - no unauthorised access ***\n"
+    docker_compose_file: "/opt/nexterm/docker-compose.yml"
+    docker_compose_content: |
+      services:
+        nexterm:
+          ports:
+            - "6989:6989"
+          restart: always
+          volumes:
+            - nexterm:/app/data
+          image: germannewsmaker/nexterm:1.0.2-OPEN-PREVIEW
+      volumes:
+        nexterm:
 
   tasks:
+    - name: Ping target host
+      ping:
+      register: ping_result
+      ignore_unreachable: true
+
+    - name: Fail if host is unreachable
+      fail:
+        msg: "The host is unreachable. Stopping playbook."
+      when: ping_result is failed
+
     - name: Update and upgrade packages
       apt:
         update_cache: yes
@@ -20,62 +42,65 @@
         dest: /etc/motd
         mode: '0644'
 
+    - name: Update resolv.conf with DNS servers
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          nameserver 172.16.1.1
+
+    - name: Install qemu-guest-agent
+      apt:
+        name: qemu-guest-agent
+        state: present
+        update_cache: yes
+
+    - name: Ensure qemu-guest-agent is running and enabled
+      systemd:
+        name: qemu-guest-agent
+        state: started
+        enabled: true
+
     - name: Install required packages
       apt:
         name:
-          - xrdp
           - sshpass
           - curl
           - vim
           - unzip
           - ansible
+          - nfs-common
         state: present
 
-    - name: Enable and start XRDP
-      systemd:
-        name: xrdp
-        enabled: yes
-        state: started
+    - name: Check if Docker is installed
+      command: which docker
+      register: docker_installed
+      ignore_errors: true
+      when: ping_result is not failed
 
-    - name: Enable and start Sesman
-      systemd:
-        name: xrdp-sesman
-        enabled: yes
-        state: started
+    - name: Download Docker install script
+      ansible.builtin.get_url:
+        url: https://get.docker.com
+        dest: /tmp/getdocker.sh
+        mode: '0744'
+      when: docker_installed.rc != 0 and ping_result is not failed
 
     - name: Install Docker
-      apt_key:
-        url: https://download.docker.com/linux/debian/gpg
-        state: present
+      shell: yes | sh /tmp/getdocker.sh
+      when: docker_installed.rc != 0 and ping_result is not failed
 
-    - name: Add Docker repository
-      copy:
-        content: "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
-        dest: /etc/apt/sources.list.d/docker.list
-
-    - name: Install Docker CE
-      apt:
-        name: docker-ce
-        state: present
-        update_cache: yes
-
-    - name: Install Terraform
-      get_url:
-        url: "https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip"
-        dest: /tmp/terraform.zip
-
-    - name: Unzip and move Terraform
-      unarchive:
-        src: /tmp/terraform.zip
-        dest: /usr/local/bin/
-        remote_src: yes
-
-    - name: Ensure Terraform binary is executable
+    - name: Create directory for Docker Compose
       file:
-        path: /usr/local/bin/terraform
+        path: /opt/nexterm
+        state: directory
         mode: '0755'
 
-    - name: Cleanup Terraform zip file
-      file:
-        path: /tmp/terraform.zip
-        state: absent
+    - name: Deploy Docker Compose file
+      copy:
+        content: "{{ docker_compose_content }}"
+        dest: "{{ docker_compose_file }}"
+        mode: '0644'
+
+    - name: Run Docker Compose to bring up services
+      command: docker compose up -d
+      args:
+        chdir: /opt/nexterm

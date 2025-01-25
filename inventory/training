@@ -2,10 +2,10 @@
 command ansible_connection=local
 
 [kali1]
-kali1.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.51 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [kali2]
-kali2.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.52 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [kali3]
 kali3.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
@@ -35,10 +35,7 @@ kali10.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o User
 sliversvr.training.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [command]
-command.training.org
-
-[services]
-services.training.org
+172.16.1.10 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [training:children]
 kali1
@@ -53,6 +50,5 @@ kali9
 kali10
 sliversvr
 
-[control:children]
-services
+[command_group:children]
 command

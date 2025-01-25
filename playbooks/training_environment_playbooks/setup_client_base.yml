@@ -1,10 +1,10 @@
 ---
-- name: Base setup of new training kali
+- name: Configure cloud-init Kali Linux
   hosts: training
   become: true
   vars_files:
     - vault.yml
-    - training.yml
+
   vars:
     motd_debian: "*** training kali - no unauthorised access ***\n"
 
@@ -17,75 +17,37 @@
 
     - name: Display debug info for host
       debug:
-        msg: "Host {{ inventory_hostname }} is running {{ ansible_distribution }}"
+        msg: "Host {{ inventory_hostname }} is running {{ ansible_distribution }} {{ ansible_distribution_version }}"
       when: ping_result is not failed
 
-    - name: set ssh motd
+    - name: Set SSH MOTD
       copy:
         content: "{{ motd_debian }}"
         dest: /etc/motd
         mode: '0644'
       when: ping_result is not failed
-      notify: MOTD changed
 
-    - name: Update package cache
-      apt:
-        update_cache: yes
-        force_apt_get: yes
-      when: ansible_distribution in ["Debian", "Ubuntu", "Kali"] and ping_result is not failed
-      notify: Updated Server
+    - name: Preconfigure language and keyboard settings
+      shell: |
+        echo "keyboard-configuration keyboard-configuration/layoutcode string gb" | debconf-set-selections
+        echo "keyboard-configuration keyboard-configuration/modelcode string pc105" | debconf-set-selections
+        echo "keyboard-configuration keyboard-configuration/layout select United Kingdom" | debconf-set-selections
+        echo "keyboard-configuration keyboard-configuration/variant select English (UK)" | debconf-set-selections
+        echo "locales locales/default_environment_locale select en_GB.UTF-8" | debconf-set-selections
+        echo "locales locales/locales_to_be_generated multiselect en_GB.UTF-8 UTF-8" | debconf-set-selections
+      when: ping_result is not failed
 
-    - name: install sliver package
-      apt:
-        name: sliver
-        state: present
-      when: ansible_distribution in ["Debian", "Ubuntu", "Kali"] and ping_result is not failed
-      notify: Sliver Installed
+    - name: Update resolv.conf with DNS servers
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          nameserver 172.16.1.1
+      when: ping_result is not failed
 
-    - name: install xrdp package
-      apt:
-        name: xrdp
-        state: present
-      when: ansible_distribution in ["Debian", "Ubuntu", "Kali"] and ping_result is not failed
-      notify: XRDP Installed
-
-    - name: enable XRDP service on startup
-      systemd:
-        name: xrdp
-        enabled: yes
-        state: started
-      when: ansible_distribution in ["Debian", "Ubuntu", "Kali"] and ping_result is not failed
-      notify: XRDP Enabled on Startup
-
-    - name: enabled session manager service on startup
-      systemd:
-        name: xrdp-sesman
-        enabled: yes
-        state: started
-      when: ansible_distribution in ["Debian", "Ubuntu", "Kali"] and ping_result is not failed
-      notify: Sesman Enabled on Startup
-
-  handlers:
-    - name: MOTD changed
-      debug:
-        msg: The MOTD was changed on {{ inventory_hostname }}
-
-    - name: Updated Server
-      debug:
-        msg: Packages were updated
-
-    - name: Sliver Installed
-      debug:
-        msg: Sliver Installed
-
-    - name: XRDP Installed
-      debug:
-        msg: XRDP Installed
-
-    - name: XRDP Enabled on Startup
-      debug:
-        msg: XRDP Enabled on Startup
-
-    - name: Sesman Enabled on Startup
-      debug:
-        msg: Sesman Enabled on Startup
+    - name: Download and execute Kali setup script
+      shell: |
+        wget -qO- https://software.labjunkie.org:30021/scripts/kali_setup.sh | sudo bash | tee /var/log/kali_setup.log
+      no_log: false
+      ignore_errors: true
+      async: 0
+      poll: 0

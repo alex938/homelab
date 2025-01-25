@@ -1,6 +1,6 @@
 ---
 - name: Install code
-  hosts: training
+  hosts: training:control
   become: true
   vars_files:
     - vault.yml

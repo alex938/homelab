@@ -1,6 +1,6 @@
 ---
-- name: shutdown of training hosts
-  hosts: training
+- name: shutdown of hosts
+  hosts: training:command_group
   become: true
   gather_facts: false
   vars_files:

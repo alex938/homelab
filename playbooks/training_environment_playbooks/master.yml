@@ -1,4 +1,4 @@
 ---
-- import_playbook: create_ansible_user.yml
+- import_playbook: setup_command.yml
 - import_playbook: setup_client_base.yml
-- import_playbook: set_ip_training_subnet.yml
+- import_playbook: reboot_clients.yml

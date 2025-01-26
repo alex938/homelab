@@ -43,8 +43,34 @@
         autoremove: yes
       when: ansible_distribution == "CentOS"
 
+    - name: Gather all facts
+      ansible.builtin.setup:
+
+    - name: Debug resource usage
+      debug:
+        msg: |
+          ============================
+          System Resource Information
+          ============================
+
+          System Uptime: {{ ansible_facts.date_time.uptime | default('Unknown') }}
+
+          CPU Information:
+            - Total CPUs: {{ ansible_facts.processor_cores | default('Unknown') }}
+            - CPU Model: {{ ansible_facts.processor | join(', ') | default('Unknown') }}
+
+          Memory Usage:
+            - Total Memory: {{ ansible_facts.memtotal_mb | default('Unknown') }} MB
+            - Free Memory: {{ ansible_facts.memfree_mb | default('Unknown') }} MB
+            - Available Memory: {{ ansible_facts.memavailable_mb | default(ansible_facts.memfree_mb | default('Unknown')) }} MB
+
+          Disk Usage:
+            - Root Filesystem Size: {{ (ansible_facts.mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_total') | first | default(0) // 1024**3) | round(2) }} GB
+            - Root Filesystem Free: {{ (ansible_facts.mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_available') | first | default(0) // 1024**3) | round(2) }} GB
+
+          ============================
+
   handlers:
     - name: Updated Server
       debug:
         msg: Packages were updated on {{ inventory_hostname }}
-...

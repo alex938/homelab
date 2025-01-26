@@ -7,7 +7,7 @@
 
   vars:
     motd_debian: "*** command.training.org - no unauthorised access ***\n"
-    docker_compose_file: "/opt/nexterm/docker-compose.yml"
+    docker_compose_file: "/opt/services/docker-compose.yml"
     docker_compose_content: |
       services:
         nexterm:
@@ -15,10 +15,47 @@
             - "6989:6989"
           restart: always
           volumes:
-            - nexterm:/app/data
+            - './nexterm/data:/app/data'
           image: germannewsmaker/nexterm:1.0.2-OPEN-PREVIEW
+        postgres:
+          image: postgres:15
+          restart: unless-stopped
+          environment:
+            - POSTGRES_USER={{ postgres_user }}
+            - POSTGRES_PASSWORD={{ postgres_password }}
+            - POSTGRES_DATABASE=postgres
+          volumes:
+            - pg_data:/var/lib/postgresql/data
+          healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U {{ postgres_user }}']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+        zipline:
+          image: ghcr.io/diced/zipline
+          ports:
+            - '3000:3000'
+          restart: unless-stopped
+          environment:
+            - CORE_RETURN_HTTPS=false
+            - CORE_SECRET={{ zip_secret }}
+            - CORE_HOST=0.0.0.0
+            - CORE_PORT=3000
+            - CORE_DATABASE_URL=postgres://{{ postgres_user }}:{{ postgres_password }}@postgres/postgres
+            - CORE_LOGGER=true
+            - MFA_TOTP_ENABLED=true
+            - MFA_TOTP_ISSUER=QubitCrossingFiles
+            - WEBSITE_TITLE=QubitCrossingFiles
+            - WEBSITE_SHOW_VERSION=false
+          volumes:
+            - './zipline/uploads:/zipline/uploads'
+            - './zipline/public:/zipline/public'
+          depends_on:
+            - 'postgres'
       volumes:
         nexterm:
+        pg_data:
 
   tasks:
     - name: Ping target host
@@ -28,13 +65,14 @@
 
     - name: Fail if host is unreachable
       fail:
-        msg: "The host is unreachable. Stopping playbook."
+        msg: "Host is unreachable - stopping!"
       when: ping_result is failed
 
-    - name: Update and upgrade packages
-      apt:
-        update_cache: yes
-        upgrade: safe
+    - name: Update resolv.conf with DNS servers
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          nameserver 172.16.1.1
 
     - name: Set the MOTD
       copy:
@@ -42,11 +80,10 @@
         dest: /etc/motd
         mode: '0644'
 
-    - name: Update resolv.conf with DNS servers
-      copy:
-        dest: /etc/resolv.conf
-        content: |
-          nameserver 172.16.1.1
+    - name: Update and upgrade packages
+      apt:
+        update_cache: yes
+        upgrade: safe
 
     - name: Install qemu-guest-agent
       apt:
@@ -90,7 +127,7 @@
 
     - name: Create directory for Docker Compose
       file:
-        path: /opt/nexterm
+        path: /opt/services
         state: directory
         mode: '0755'
 
@@ -103,4 +140,4 @@
     - name: Run Docker Compose to bring up services
       command: docker compose up -d
       args:
-        chdir: /opt/nexterm
+        chdir: /opt/services

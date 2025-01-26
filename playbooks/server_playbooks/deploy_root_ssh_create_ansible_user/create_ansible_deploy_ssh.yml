@@ -70,7 +70,6 @@
             name: ssh
             state: reloaded
           notify: notify_reload_sshd
-
       when: ping_result is succeeded
 
   handlers:

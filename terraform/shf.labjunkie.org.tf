@@ -9,6 +9,7 @@ resource "proxmox_vm_qemu" "shf" {
     desc        = "shf.labjunkie.org"
     vmid        = "511"
     target_node = "aio1"
+    onboot      = true
 
     agent       = 1
     clone       = "ubuntubase2"
@@ -44,6 +45,6 @@ resource "proxmox_vm_qemu" "shf" {
     network {
         model  = "virtio"
         bridge = "vmbr0"
-        firewall = true
+        firewall = false
     }
 }

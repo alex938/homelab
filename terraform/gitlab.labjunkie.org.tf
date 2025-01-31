@@ -1,17 +1,15 @@
-variable "create_kw1_vm" {
+variable "create_gitlab_vm" {
   type    = bool
   default = true
 }
 
-resource "proxmox_vm_qemu" "kw1" {
-    count       = var.create_kw1_vm ? 1 : 0
-    name        = "kw1.labjunkie.org"
-    desc        = "kw1.labjunkie.org"
-    vmid        = "202"
+resource "proxmox_vm_qemu" "gitlab" {
+    count       = var.create_gitlab_vm ? 1 : 0
+    name        = "gitlab.labjunkie.org"
+    desc        = "gitlab.labjunkie.org"
+    vmid        = "515"
     target_node = "b01"
     onboot      = true
-
-    depends_on = [proxmox_vm_qemu.k8slb]
 
     agent       = 1
     clone       = "ubuntubase2"
@@ -35,14 +33,15 @@ resource "proxmox_vm_qemu" "kw1" {
         storage = "local-lvm"
         type    = "cloudinit"
         slot    = "scsi1"
-        format  = "raw"
+        format  = "raw" #Changed from "qcow2" to "raw" to avoid error proxmox when using local-lvm storage, Proxmox stores VM disks as raw volumes
     }
 
     bootdisk    = "scsi0"
     os_type     = "cloud-init"
     ciuser      = "alex"
     cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0" #"alex" changed via ansible scripts
-    ipconfig0   = "ip=192.168.2.51/24,gw=192.168.2.1,dns=192.168.2.12,172.20.1.2"
+    ipconfig0   = "ip=192.168.2.90/24,gw=192.168.2.1,dns=192.168.2.12,172.20.1.2"
+
 
     network {
         model  = "virtio"

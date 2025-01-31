@@ -9,6 +9,7 @@ resource "proxmox_vm_qemu" "si" {
     desc        = "si.labjunkie.org"
     vmid        = "510"
     target_node = "ms01"
+    onboot      = true
 
     agent       = 1
     clone       = "ubuntubase"
@@ -44,6 +45,6 @@ resource "proxmox_vm_qemu" "si" {
     network {
         model  = "virtio"
         bridge = "vmbr0"
-        firewall = true
+        firewall = false
     }
 }

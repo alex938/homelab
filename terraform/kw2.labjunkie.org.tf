@@ -9,6 +9,7 @@ resource "proxmox_vm_qemu" "kw2" {
     desc        = "kw2.labjunkie.org"
     vmid        = "203"
     target_node = "aio1"
+    onboot      = true
 
     depends_on = [proxmox_vm_qemu.kw1]
 
@@ -46,6 +47,6 @@ resource "proxmox_vm_qemu" "kw2" {
     network {
         model  = "virtio"
         bridge = "vmbr0"
-        firewall = true
+        firewall = false
     }
 }

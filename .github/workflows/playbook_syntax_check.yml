@@ -30,12 +30,12 @@ jobs:
       - name: Detect changed playbooks
         id: changed-files
         run: |
-          PLAYBOOKS=$(git diff --name-only --diff-filter=AM origin/main | grep '^playbooks/.*\.yml$' || true)
+          PLAYBOOKS=$(git log -m -1 --name-only --pretty=format: | grep '^playbooks/.*\.yml$' || true)
           echo "Changed playbooks: $PLAYBOOKS"
           echo "PLAYBOOKS=$PLAYBOOKS" >> $GITHUB_ENV
 
       - name: Run Ansible Syntax Check
-        if: ${{ env.PLAYBOOKS != '' }}
+        if: env.PLAYBOOKS != ''
         run: |
           for playbook in $PLAYBOOKS; do
             echo "Checking syntax for $playbook"

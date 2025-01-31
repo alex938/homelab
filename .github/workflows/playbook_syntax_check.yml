@@ -1,21 +1,21 @@
-name: ansible syntax check
+name: Ansible Syntax Check
 
 on:
   push:
     branches:
       - main
     paths:
-      - '**/*.yml'  
+      - '**/*.yml'
   pull_request:
     branches:
       - main
     paths:
-      - '**/*.yml'  
+      - '**/*.yml'
   workflow_dispatch:
 
 jobs:
   syntax-check:
-    name: ansible syntax check
+    name: Ansible Syntax Check
     runs-on: ubuntu-latest
 
     steps:
@@ -27,18 +27,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install ansible
 
-      - name: run ansible syntax check
+      - name: Run Ansible Syntax Check
         run: |
-          FAILED=()
-          for playbook in $(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.yml$' || true); do
+          for playbook in $(git diff --name-only --diff-filter=AM HEAD^ | grep '\.yml$' || true); do
             echo "Checking syntax for $playbook"
-            if ! ansible-playbook -i localhost, "$playbook" --syntax-check; then
-              FAILED+=("$playbook")
-            fi
+            ansible-playbook -i localhost, "$playbook" --syntax-check || exit 1
           done
-          
-          if [ ${#FAILED[@]} -ne 0 ]; then
-            echo "❌ Syntax check failed for:"
-            printf '%s\n' "${FAILED[@]}"
-            exit 1
-          fi

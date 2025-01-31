@@ -19,8 +19,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository with full history
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Set up Python & Install Ansible
         run: |
@@ -30,17 +32,26 @@ jobs:
       - name: Detect changed playbooks
         id: changed-files
         run: |
-          if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
-            PLAYBOOKS=$(git diff --name-only HEAD~1 HEAD | grep '^playbooks/.*\.yml$' || true)
-          else
-            PLAYBOOKS=$(git diff --name-only HEAD | grep '^playbooks/.*\.yml$' || true)
+          git fetch --no-tags --depth=2 origin main  # Ensure we have the previous commit
+
+          # Detect changed files in the last commit
+          PLAYBOOKS=$(git diff --name-only HEAD^ HEAD | grep '^playbooks/.*\.yml$' || true)
+
+          # If no changes detected, fall back to staged files (for manual workflow_dispatch)
+          if [ -z "$PLAYBOOKS" ]; then
+            echo "No changes detected with git diff. Checking unstaged files..."
+            PLAYBOOKS=$(git ls-files --modified --others --exclude-standard | grep '^playbooks/.*\.yml$' || true)
           fi
-          echo "Changed playbooks: $PLAYBOOKS"
-          echo "PLAYBOOKS=$PLAYBOOKS" >> $GITHUB_ENV
+
+          # Store playbooks in a space-separated format for GitHub Actions
+          echo "PLAYBOOKS=${PLAYBOOKS}" >> $GITHUB_ENV
 
       - name: Run Ansible Syntax Check
         if: ${{ env.PLAYBOOKS != '' }}
         run: |
+          echo "Running syntax check on changed playbooks: $PLAYBOOKS"
+
+          # Run syntax check for each changed file
           for playbook in $PLAYBOOKS; do
             echo "Checking syntax for $playbook"
             ansible-playbook -i localhost, "$playbook" --syntax-check || exit 1

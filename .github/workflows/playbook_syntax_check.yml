@@ -1,16 +1,16 @@
-name: Ansible Syntax Check
+name: Ansible Playbook Syntax Check
 
 on:
   push:
     branches:
       - main
     paths:
-      - '**/*.yml'
+      - 'homelab/playbooks/**/*.yml'
   pull_request:
     branches:
       - main
     paths:
-      - '**/*.yml'
+      - 'homelab/playbooks/**/*.yml'
   workflow_dispatch:
 
 jobs:
@@ -27,9 +27,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install ansible
 
-      - name: Run Ansible Syntax Check
+      - name: Detect changed playbooks
+        id: changed-files
         run: |
-          for playbook in $(git diff --name-only --diff-filter=AM HEAD^ | grep '\.yml$' || true); do
+          PLAYBOOKS=$(git diff --name-only --diff-filter=AM origin/main | grep '^homelab/playbooks/.*\.yml$' || true)
+          echo "Changed playbooks: $PLAYBOOKS"
+          echo "PLAYBOOKS=$PLAYBOOKS" >> $GITHUB_ENV
+
+      - name: Run Ansible Syntax Check
+        if: env.PLAYBOOKS != ''
+        run: |
+          for playbook in $PLAYBOOKS; do
             echo "Checking syntax for $playbook"
             ansible-playbook -i localhost, "$playbook" --syntax-check || exit 1
           done

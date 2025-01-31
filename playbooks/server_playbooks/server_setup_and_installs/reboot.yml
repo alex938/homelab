@@ -24,6 +24,6 @@
       poll: 0
       register: reboot_result
 
-    - nam: Debug reboot result
+    - name: Debug reboot result
       debug:
         var: reboot_result

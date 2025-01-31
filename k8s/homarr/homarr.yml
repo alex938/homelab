@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: homarr-appdata-volume
+  labels:
+    type: shared
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /volume1/share1/homarr
+    server: nas.batcave.local
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: homarr-appdata-pvc
+spec:
+  storageClassName: ""
+  volumeName: homarr-appdata-volume  # explicitly binding to above PV
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homarr-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: homarr
+  template:
+    metadata:
+      labels:
+        app: homarr
+    spec:
+      containers:
+        - name: homarr
+          image: ghcr.io/homarr-labs/homarr:latest
+          ports:
+            - containerPort: 7575
+          env:
+            - name: SECRET_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: homarr-secret
+                  key: encryption-key
+          volumeMounts:
+            - name: appdata-volume
+              mountPath: /appdata
+      volumes:
+        - name: appdata-volume
+          persistentVolumeClaim:
+            claimName: homarr-appdata-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homarr-service
+spec:
+  type: NodePort
+  ports:
+    - name: web
+      port: 7575
+      targetPort: 7575
+      nodePort: 30775
+  selector:
+    app: homarr

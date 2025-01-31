@@ -15,7 +15,6 @@ pi5-svr2.labjunkie.org
 pi5-rivers.batcave.local
 
 [centos]
-192.168.2.34 #ansible test vm
 
 [ubuntu]
 dev2.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #dev machine proxmox

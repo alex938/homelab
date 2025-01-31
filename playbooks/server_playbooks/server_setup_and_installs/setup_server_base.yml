@@ -83,6 +83,11 @@
       when: docker_script.stat.exists and ping_result is not failed
       notify: Docker Script Removed
 
+    - name: Ensure NFS tools are installed
+      ansible.builtin.package:
+        name: nfs-common
+        state: present
+
   handlers:
     - name: MOTD changed
       debug:

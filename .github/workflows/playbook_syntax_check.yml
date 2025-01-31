@@ -30,7 +30,11 @@ jobs:
       - name: Detect changed playbooks
         id: changed-files
         run: |
-          PLAYBOOKS=$(git diff --name-only HEAD^ HEAD | grep '^playbooks/.*\.yml$' || true)
+          if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+            PLAYBOOKS=$(git diff --name-only HEAD~1 HEAD | grep '^playbooks/.*\.yml$' || true)
+          else
+            PLAYBOOKS=$(git diff --name-only HEAD | grep '^playbooks/.*\.yml$' || true)
+          fi
           echo "Changed playbooks: $PLAYBOOKS"
           echo "PLAYBOOKS=$PLAYBOOKS" >> $GITHUB_ENV
 

@@ -24,6 +24,6 @@
       poll: 0
       register: shutdown_result
 
-    - nam: Debug shutdown result
+    - name: Debug shutdown result
       debug:
         var: shutdown_result

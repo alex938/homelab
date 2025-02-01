@@ -12,7 +12,7 @@ splunk-kubernetes-logging:
   splunk:
     hec:
       indexName: kubernetes_logs
-  logFormat: cri  # ensure defaul k8s logging format
+  logFormat: cri  # ensure default k8s logging format
   containers:
     logFormatType: cri
   kubernetes:
@@ -25,6 +25,10 @@ splunk-kubernetes-logging:
           pattern: "Worker 0 finished unexpectedly"
         - key: "log"
           pattern: "Worker 0 finished unexpectedly"
+        - key: "namespace"
+          pattern: "kube-system"  # Exclude logs from kube-system namespace
+        - key: "pod"
+          pattern: "coredns"  # Exclude logs from CoreDNS pods
 
 splunk-kubernetes-metrics:
   splunk:

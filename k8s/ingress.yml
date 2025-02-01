@@ -3,6 +3,7 @@ kind: Ingress
 metadata:
   name: fileserver-ingress
   annotations:
+    #nginx.ingress.kubernetes.io/use-proxy-protocol: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-cloudflare"  # this ensures cert-manager issues the certificate
 spec:
   ingressClassName: nginx

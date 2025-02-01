@@ -46,7 +46,7 @@
 
     - name: Download and execute Kali setup script
       shell: |
-        wget -qO- https://software.labjunkie.org:30021/scripts/kali_setup.sh | sudo bash | tee /var/log/kali_setup.log
+        wget -qO- https://software.labjunkie.org/scripts/kali_setup.sh | sudo bash | tee /var/log/kali_setup.log
       no_log: false
       ignore_errors: true
       async: 0

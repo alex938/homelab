@@ -3,33 +3,68 @@ namespace: splunk
 global:
   splunk:
     hec:
-      host: 192.168.2.61
+      host: "192.168.2.61"
       port: 8088
-      ssl: false
-      protocol: "http"  #set this to 'http' or 'https'
+      protocol: "http"
+      token: "567f42e8-3976-48f3-8cf8-c3954f6e7704" 
+
+splunk-kubernetes-logging:
+  splunk:
+    hec:
+      indexName: kubernetes_logs
+  logFormat: cri  # ensure defaul k8s logging format
+  containers:
+    logFormatType: cri
+  kubernetes:
+    insecureSSL: true  # disable SSL verification for API calls
+  filters:
+    - filterName: exclude-noisy-logs
+      type: grep
+      exclude:
+        - key: "message"
+          pattern: "Worker 0 finished unexpectedly"
+        - key: "log"
+          pattern: "Worker 0 finished unexpectedly"
 
 splunk-kubernetes-metrics:
   splunk:
     hec:
       indexName: kubernetes_metrics
-      token: "567f42e8-3976-48f3-8cf8-c3954f6e7704"  #replace with actual token
 
 splunk-kubernetes-objects:
   splunk:
     hec:
-      indexName: kubernetes_logs
-      token: "567f42e8-3976-48f3-8cf8-c3954f6e7704"  #replace with actual token
+      indexName: kubernetes_objects
+
+logs:
+  enabled: false  #disable standard logging
 
 metrics:
-  enabled: true
+  enabled: false
   namespaces:
     include:
       - "default"
-      - "splunk"
+      - "cert-manager"
+    exclude:
+      - "splunk"  # exclude fluentd logs
+  excludePods:
+    - "splunk-connect-splunk-kubernetes-logging"
+    - "splunk-connect-splunk-kubernetes-metrics"
+    - "splunk-connect-splunk-kubernetes-objects"
+  extraMetrics: true
+  metricSource: all
+  use_rest_client_ssl: false  # disable SSL verification  
 
 objects:
   enabled: true
   namespaces:
     include:
       - "default"
-      - "splunk"
+      - "cert-manager"
+    exclude:
+      - "splunk"  # exclude fluentd logs
+  excludePods:
+    - "splunk-connect-splunk-kubernetes-logging"
+    - "splunk-connect-splunk-kubernetes-metrics"
+    - "splunk-connect-splunk-kubernetes-objects"
+  use_rest_client_ssl: false  # disable SSL verification  

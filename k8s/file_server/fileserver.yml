@@ -5,39 +5,27 @@ metadata:
 data:
   nginx.conf: |
     worker_processes 5;
-
     events {
         worker_connections 1024;
     }
-
     http {
       log_format main '$remote_addr - $remote_user [$time_local] "$request" '
                         '$status $body_bytes_sent "$http_referer" '
                         '"$http_user_agent" "$remote_addr"';
 
-        access_log /usr/share/nginx/logs/access-$HOSTNAME.log main;
+      access_log /usr/share/nginx/logs/access-$HOSTNAME.log main;
         
-        server {
-            listen 80;
-            server_name software.labjunkie.org;
+      server {
+          listen 80;
+          server_name software.labjunkie.org;
 
-            return 301 https://$host$request_uri;  # Redirect HTTP to HTTPS
-        }
-
-        server {
-            listen 443 ssl;
-            server_name software.labjunkie.org;
-
-            ssl_certificate /etc/nginx/certs/fullchain1.pem;
-            ssl_certificate_key /etc/nginx/certs/privkey1.pem;
-
-            location / {
-                root /usr/share/nginx/html;
-                autoindex on;
-                autoindex_exact_size off;
-                autoindex_localtime on;
-            }
-        }
+          location / {
+              root /usr/share/nginx/html;
+              autoindex on;
+              autoindex_exact_size off;
+              autoindex_localtime on;
+          }
+      }
     }
 ---
 apiVersion: v1
@@ -47,7 +35,7 @@ metadata:
   labels:
     type: shared
 spec:
-  storageClassName: ""  #explicitly disable dynamic provisioning
+  storageClassName: ""
   capacity:
     storage: 5Mi
   accessModes:
@@ -75,7 +63,7 @@ metadata:
   labels:
     type: shared
 spec:
-  storageClassName: ""  #explicitly disable dynamic provisioning
+  storageClassName: ""
   capacity:
     storage: 1Gi
   accessModes:
@@ -115,7 +103,6 @@ spec:
           image: nginx:1.26.2
           ports:
             - containerPort: 80
-            - containerPort: 443
           env:
           - name: HOSTNAME
             valueFrom:
@@ -126,11 +113,9 @@ spec:
               mountPath: /usr/share/nginx/html
             - name: logs-volume
               mountPath: /usr/share/nginx/logs
-            - name: nginx-config-volume # not really a volume, just kubernetes terminology
+            - name: nginx-config-volume
               mountPath: /etc/nginx/nginx.conf
               subPath: nginx.conf
-            - name: certs-volume
-              mountPath: /etc/nginx/certs
       volumes:
         - name: software-volume
           persistentVolumeClaim:
@@ -141,25 +126,16 @@ spec:
         - name: nginx-config-volume
           configMap:
             name: nginx-config
-        - name: certs-volume
-          nfs:
-            path: /volume1/k8s/certs/live/software.labjunkie.org
-            server: nas.batcave.local
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: fileserver-nginx-service
 spec:
-  type: NodePort
+  type: ClusterIP  # ingress will handle external exposure
   ports:
-    - name: http  # add a unique name for the HTTP port
+    - name: http
       port: 80
       targetPort: 80
-      nodePort: 30020
-    - name: https  # add a unique name for the HTTPS port
-      port: 443
-      targetPort: 443
-      nodePort: 30021
   selector:
     app: fileserver

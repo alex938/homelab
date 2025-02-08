@@ -1,12 +1,9 @@
 ---
-- name: Install code
+- name: Install vscode
   hosts: training:control
   become: true
   vars_files:
     - vault.yml
-    - training.yml
-  vars:
-    motd_debian: "*** training kali - no unauthorised access ***\n"
 
   tasks:
     - name: Ping the host
@@ -20,41 +17,33 @@
         msg: "Host {{ inventory_hostname }} is running {{ ansible_distribution }}"
       when: ping_result is not failed
 
-    - name: set ssh motd
-      copy:
-        content: "{{ motd_debian }}"
-        dest: /etc/motd
-        mode: '0644'
-      when: ping_result is not failed
-      notify: MOTD changed
+    - name: Add amd64 architecture
+      command: dpkg --add-architecture amd64
 
-    - name: copy vscode .deb package to host
-      copy:
-        src: ../../playbook_files/code.deb
-        #src: playbook_files/terminator_2.1.4-3_all.deb
+    - name: Download VSCode .deb package to the remote host
+      get_url:
+        url: https://software.labjunkie.org/code_amd64.deb
         dest: /tmp/code.deb
-      notify: Copy vscode installer
+      notify: Download vscode installer
 
-    - name: install vscode
+    - name: Install VSCode from .deb package
       apt:
         deb: /tmp/code.deb
         state: present
+        update_cache: yes
+        cache_valid_time: 3600
       notify: Install vscode
 
-    - name: cleanup vscode .deb
+    - name: Cleanup VSCode .deb package
       file:
         path: /tmp/code.deb
         state: absent
       notify: Cleanup vscode
 
   handlers:
-    - name: MOTD changed
+    - name: Download vscode installer
       debug:
-        msg: The MOTD was changed on {{ inventory_hostname }}
-
-    - name: Copy vscode installer
-      debug:
-        msg: Copy vscode installer
+        msg: Download vscode installer
 
     - name: Install vscode
       debug:

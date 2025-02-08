@@ -44,7 +44,7 @@ jobs:
           fi
 
           # Store playbooks in a space-separated format for GitHub Actions
-          echo "PLAYBOOKS=${PLAYBOOKS}" >> $GITHUB_ENV
+          echo "PLAYBOOKS=$(echo "$PLAYBOOKS" | tr '\n' ' ')" >> $GITHUB_ENV
 
       - name: Run Ansible Syntax Check
         if: ${{ env.PLAYBOOKS != '' }}

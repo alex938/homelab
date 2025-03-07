@@ -6,7 +6,7 @@
     - vault.yml
 
   vars:
-    motd_debian: "*** training sliver svr - no unauthorised access ***\n"
+    motd_debian: "*** sliversvr.labjunkie.org - no unauthorised access ***\n"
     sliver_service_path: "/etc/systemd/system/sliver.service"
 
   tasks:

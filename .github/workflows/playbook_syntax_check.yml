@@ -35,7 +35,7 @@ jobs:
           git fetch --no-tags --depth=2 origin main  # Ensure we have the previous commit
 
           # Detect changed files in the last commit
-          PLAYBOOKS=$(git diff --name-only HEAD^ HEAD | grep '^playbooks/.*\.yml$' || true)
+          PLAYBOOKS=$(git diff --name-only HEAD^ HEAD | grep -E '^playbooks/((?!group_vars|host_vars).)*\.yml$' || true)
 
           # If no changes detected, fall back to staged files (for manual workflow_dispatch)
           if [ -z "$PLAYBOOKS" ]; then

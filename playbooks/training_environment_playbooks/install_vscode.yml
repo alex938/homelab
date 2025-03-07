@@ -12,7 +12,7 @@
       ignore_unreachable: true
       ignore_errors: true
 
-    - name: Display debug info for host
+    - name: Display debug info
       debug:
         msg: "Host {{ inventory_hostname }} is running {{ ansible_distribution }}"
       when: ping_result is not failed

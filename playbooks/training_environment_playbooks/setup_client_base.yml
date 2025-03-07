@@ -49,5 +49,9 @@
         wget -qO- https://software.labjunkie.org/scripts/kali_setup.sh | sudo bash | tee /var/log/kali_setup.log
       no_log: false
       ignore_errors: true
-      async: 0
-      poll: 0
+
+    - name: Download Sliver client binary
+      get_url:
+        url: https://software.labjunkie.org/sliver/sliver-client
+        dest: /usr/local/bin/sliver
+        mode: '0755'

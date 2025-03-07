@@ -1,0 +1,87 @@
+---
+- name: Configure sliver-svr
+  hosts: servers_group
+  become: true
+  vars_files:
+    - vault.yml
+
+  vars:
+    motd_debian: "*** training sliver svr - no unauthorised access ***\n"
+    sliver_service_path: "/etc/systemd/system/sliver.service"
+
+  tasks:
+    - name: Ping the host
+      ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Display debug info for host
+      debug:
+        msg: "Host {{ inventory_hostname }} is running {{ ansible_distribution }} {{ ansible_distribution_version }}"
+      when: ping_result is not failed
+
+    - name: Set SSH MOTD
+      copy:
+        content: "{{ motd_debian }}"
+        dest: /etc/motd
+        mode: '0644'
+      when: ping_result is not failed
+
+    - name: Download and execute Kali setup script
+      shell: |
+        wget -qO- https://software.labjunkie.org/scripts/kali_setup.sh | sudo bash | tee /var/log/kali_setup.log
+      no_log: false
+      ignore_errors: true
+
+    - name: Download Sliver server binary
+      get_url:
+        url: https://software.labjunkie.org/sliver/sliver-server
+        dest: /usr/local/bin/sliver-server
+        mode: '0755'
+
+    - name: Download Sliver client binary
+      get_url:
+        url: https://software.labjunkie.org/sliver/sliver-client
+        dest: /usr/local/bin/sliver
+        mode: '0755'
+
+    - name: Create systemd service for Sliver
+      copy:
+        dest: "{{ sliver_service_path }}"
+        content: |
+          [Unit]
+          Description=Sliver
+          After=network.target
+          StartLimitIntervalSec=0
+
+          [Service]
+          Type=simple
+          Restart=on-failure
+          RestartSec=3
+          User=root
+          ExecStart=/usr/local/bin/sliver-server daemon
+
+          [Install]
+          WantedBy=multi-user.target
+        mode: '0600'
+
+    - name: Unpack sliver-server
+      shell: |
+        sliver-server unpack --force >> /var/log/kali_setup.log 2>&1
+      no_log: false
+      ignore_errors: true
+
+    - name: Reload systemd to apply Sliver service
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable Sliver service at startup
+      systemd:
+        name: sliver
+        enabled: yes
+
+    - name: Start Sliver service
+      systemd:
+        name: sliver
+        state: started

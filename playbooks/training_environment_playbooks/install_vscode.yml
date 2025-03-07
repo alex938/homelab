@@ -1,6 +1,6 @@
 ---
 - name: Install vscode
-  hosts: training:control
+  hosts: training
   become: true
   vars_files:
     - vault.yml

@@ -1,5 +1,6 @@
 ---
 - import_playbook: setup_command.yml
 - import_playbook: setup_client_base.yml
+- import_playbook: setup_sliver_svr.yml
 - import_playbook: install_vscode.yml
 - import_playbook: reboot_clients.yml

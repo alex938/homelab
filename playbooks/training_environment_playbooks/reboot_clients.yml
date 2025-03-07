@@ -1,6 +1,6 @@
 ---
 - name: Reboot training kali
-  hosts: training:command_group
+  hosts: training,command_group,servers_group
   become: true
   gather_facts: false
   vars_files:

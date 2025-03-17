@@ -72,6 +72,13 @@
       no_log: false
       ignore_errors: true
 
+    - name: Activate sliver multiplayer mode
+      shell: |
+        bash -c 'sliver-server <<< "multiplayer"' >> /var/log/kali_setup.log 2>&1 
+      async: 10
+      poll: 0
+      ignore_errors: true
+
     - name: Reload systemd to apply Sliver service
       systemd:
         daemon_reload: yes

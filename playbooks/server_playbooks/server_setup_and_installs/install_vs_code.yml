@@ -13,44 +13,41 @@
       ignore_errors: true
 
     - name: Display debug info for host
-      debug:
+      ansible.builtin.debug:
         msg: "Host {{ inventory_hostname }} is running {{ ansible_distribution }}"
       when: ping_result is not failed
 
-    - name: Ensure libasound2t64 vscode dependency is installed
-      apt:
-        name:
-          - libasound2t64
+    - name: Ensure required dependency is installed
+      ansible.builtin.apt:
+        name: libasound2
         state: latest
 
-    - name: copy vscode .deb package to host
-      copy:
-        src: /mnt/share1/software/code_amd64.deb
-        #src: playbook_files/terminator_2.1.4-3_all.deb
-        dest: /tmp/code.deb
-      notify: Copy vscode installer
+    - name: Detect system architecture
+      ansible.builtin.command: dpkg --print-architecture
+      register: system_arch
+      changed_when: false
 
-    - name: install vscode
-      apt:
+    - name: Set VS Code download URL based on architecture
+      ansible.builtin.set_fact:
+        vscode_url: >-
+          {{
+            'https://software.labjunkie.org/code_arm64.deb'
+            if 'arm64' in system_arch.stdout else
+            'https://software.labjunkie.org/code_amd64.deb'
+          }}
+
+    - name: Download the correct VS Code package
+      ansible.builtin.get_url:
+        url: "{{ vscode_url }}"
+        dest: /tmp/code.deb
+        mode: '0644'
+
+    - name: Install VS Code
+      ansible.builtin.apt:
         deb: /tmp/code.deb
         state: present
-      notify: Install vscode
 
-    - name: cleanup vscode .deb
-      file:
+    - name: Cleanup VS Code .deb package
+      ansible.builtin.file:
         path: /tmp/code.deb
         state: absent
-      notify: Cleanup vscode
-
-  handlers:
-    - name: Copy vscode installer
-      debug:
-        msg: Copy vscode installer
-
-    - name: Install vscode
-      debug:
-        msg: Install vscode
-
-    - name: Cleanup vscode
-      debug:
-        msg: Cleanup vscode

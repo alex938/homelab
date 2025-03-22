@@ -1,4 +1,5 @@
 #!/bin/bash
+#wget -qO- https://raw.githubusercontent.com/alex938/homelab/refs/heads/main/configure_bashrc.sh | bash
 
 ALIAS_URL="https://raw.githubusercontent.com/alex938/homelab/refs/heads/main/alias.txt"
 

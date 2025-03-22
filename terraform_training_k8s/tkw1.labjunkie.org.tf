@@ -26,8 +26,8 @@ resource "proxmox_vm_qemu" "tkw1" {
     disk {
         storage = "data2"
         type    = "disk"
-        size    = "100G"     
-        slot    = "scsi0"    
+        size    = "100G"
+        slot    = "scsi0"
         format  = "qcow2"
     }
 
@@ -41,12 +41,22 @@ resource "proxmox_vm_qemu" "tkw1" {
     bootdisk    = "scsi0"
     os_type     = "cloud-init"
     ciuser      = "alex"
-    cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0" #"alex" changed via ansible scripts
+    cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0"
     ipconfig0   = "ip=192.168.2.231/24,gw=192.168.2.1,dns=192.168.2.12,172.20.1.2"
 
     network {
-        model  = "virtio"
-        bridge = "vmbr0"
+        model    = "virtio"
+        bridge   = "vmbr0"
         firewall = false
     }
+
+    lifecycle {
+        ignore_changes = [
+        ciuser,
+        cipassword,
+        ipconfig0,
+        bootdisk,
+        disk
+    ]
+  }
 }

@@ -1,6 +1,6 @@
 ---
 - name: reboot of hosts
-  hosts: homelab:k8s
+  hosts: homelab:k8s:!dev1.labjunkie.org
   become: true
   gather_facts: false
   vars_files:

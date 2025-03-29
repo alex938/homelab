@@ -18,8 +18,10 @@
         name: qemu-guest-agent
         state: started
         enabled: true
+      register: qemu_guest_agent_status
       when: ansible_distribution in ["Ubuntu", "Debian"]
 
     - name: Debug qemu-guest-agent status
       debug:
         msg: "QEMU Guest Agent is {{ qemu_guest_agent_status.state }}"
+      when: ansible_distribution in ["Ubuntu", "Debian"]

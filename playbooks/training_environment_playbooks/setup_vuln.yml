@@ -1,0 +1,143 @@
+---
+- name: Setup for vuln box
+  hosts: vuln_group
+  become: true
+  vars_files:
+    - vault.yml
+
+  vars:
+    motd_debian: "*** vuln.poe.local - no unauthorised access ***\n"
+    project_dir: /opt/apache-cgi-test
+    image_name: apache-cgi
+    container_name: apache-cgi-container
+    container_port: 8080
+
+  tasks:
+    - name: Ping target host
+      ping:
+      register: ping_result
+      ignore_unreachable: true
+
+    - name: Fail if host is unreachable
+      fail:
+        msg: "Host is unreachable - stopping!"
+      when: ping_result is failed
+
+    - name: Update resolv.conf with DNS servers
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          nameserver 172.16.1.1
+
+    - name: Set the MOTD
+      copy:
+        content: "{{ motd_debian }}"
+        dest: /etc/motd
+        mode: '0644'
+
+    - name: Update and upgrade packages
+      apt:
+        update_cache: yes
+        upgrade: safe
+
+    - name: Install qemu-guest-agent
+      apt:
+        name: qemu-guest-agent
+        state: present
+        update_cache: yes
+
+    - name: Ensure qemu-guest-agent is running and enabled
+      systemd:
+        name: qemu-guest-agent
+        state: started
+        enabled: true
+
+    - name: Install required packages
+      apt:
+        name:
+          - sshpass
+          - curl
+          - vim
+          - unzip
+          - ansible
+          - nfs-common
+        state: present
+
+    - name: Check if Docker is installed
+      command: which docker
+      register: docker_installed
+      ignore_errors: true
+      when: ping_result is not failed
+
+    - name: Download Docker install script
+      ansible.builtin.get_url:
+        url: https://get.docker.com
+        dest: /tmp/getdocker.sh
+        mode: '0744'
+      when: docker_installed.rc != 0 and ping_result is not failed
+
+    - name: Install Docker
+      shell: yes | sh /tmp/getdocker.sh
+      when: docker_installed.rc != 0 and ping_result is not failed
+
+    - name: Create project directory for Apache container
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Create Dockerfile
+      copy:
+        dest: "{{ project_dir }}/Dockerfile"
+        content: |
+          FROM vulhub/httpd:2.4.49
+
+          RUN set -ex \
+              && sed -i "s|#LoadModule cgid_module modules/mod_cgid.so|LoadModule cgid_module modules/mod_cgid.so|g" /usr/local/apache2/conf/httpd.conf \
+              && sed -i "s|#LoadModule cgi_module modules/mod_cgi.so|LoadModule cgi_module modules/mod_cgi.so|g" /usr/local/apache2/conf/httpd.conf \
+              && sed -i "s|#Include conf/extra/httpd-autoindex.conf|Include conf/extra/httpd-autoindex.conf|g" /usr/local/apache2/conf/httpd.conf \
+              && cat /usr/local/apache2/conf/httpd.conf \
+                  | tr '\n' '\r' \
+                  | perl -pe 's|<Directory />.*?</Directory>|<Directory />\n    AllowOverride none\n    Require all granted\n</Directory>|isg' \
+                  | tr '\r' '\n' \
+                  | tee /tmp/httpd.conf \
+              && mv /tmp/httpd.conf /usr/local/apache2/conf/httpd.conf \
+              && echo 'roger:$1$D0kWlDqX$LjAZ5b7McvBRZXOUbof89.:1001:1001::/home/roger:/bin/bash' >> /etc/passwd \
+              && mkdir -p /home/roger && chown -R 1001:1001 /home/roger
+
+    - name: Build the Docker image
+      command: docker build -t {{ image_name }} .
+      args:
+        chdir: "{{ project_dir }}"
+
+    - name: Run the Docker container
+      command: >
+        docker run -d --name {{ container_name }}
+        -p {{ container_port }}:80
+        {{ image_name }}
+      ignore_errors: true
+
+    - name: Install expect
+      apt:
+        name: expect
+        state: present
+
+    - name: Create user 'roger'
+      user:
+        name: roger
+        shell: /bin/bash
+        create_home: yes
+        state: present
+
+    - name: Set password for user roger to 'password123!' using expect
+      expect:
+        command: passwd roger
+        responses:
+          'New password:': "password123!\n"
+          'Retype new password:': "password123!\n"
+
+    - name: Add roger to sudoers
+      user:
+        name: roger
+        groups: sudo
+        append: yes

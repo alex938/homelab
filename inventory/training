@@ -37,6 +37,9 @@ command ansible_connection=local
 [command]
 172.16.1.10 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
+[vuln1]
+172.16.1.21 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
 [training:children]
 kali1
 kali2
@@ -54,3 +57,6 @@ sliversvr
 
 [command_group:children]
 command
+
+[vuln_group:children]
+vuln1

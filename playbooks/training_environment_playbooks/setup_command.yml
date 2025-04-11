@@ -43,7 +43,7 @@
             - CORE_SECRET={{ zip_secret }}
             - CORE_HOST=0.0.0.0
             - CORE_PORT=3000
-            - CORE_DATABASE_URL=postgres://{{ postgres_user }}:{{ postgres_password }}@postgres/postgres
+            - DATABASE_URL=postgres://{{ postgres_user }}:{{ postgres_password }}@postgres/postgres
             - CORE_LOGGER=true
             - MFA_TOTP_ENABLED=true
             - MFA_TOTP_ISSUER=QubitCrossingFiles

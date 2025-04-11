@@ -1,6 +1,6 @@
 ---
 - name: Gather facts from training
-  hosts: training:control
+  hosts: training,command_group,servers_group,vuln_group
   gather_facts: false
   vars_files:
     - vault.yml

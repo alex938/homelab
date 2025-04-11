@@ -10,7 +10,7 @@
     project_dir: /opt/apache-cgi-test
     image_name: apache-cgi
     container_name: apache-cgi-container
-    container_port: 8080
+    container_port: 80
 
   tasks:
     - name: Ping target host
@@ -113,6 +113,7 @@
     - name: Run the Docker container
       command: >
         docker run -d --name {{ container_name }}
+        --restart=always
         -p {{ container_port }}:80
         {{ image_name }}
       ignore_errors: true
@@ -141,3 +142,26 @@
         name: roger
         groups: sudo
         append: yes
+
+    - name: Enable password authentication for SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication\s+'
+        line: 'PasswordAuthentication yes'
+        state: present
+        backrefs: yes
+
+    - name: override cloudimg
+      lineinfile:
+        path: /etc/ssh/sshd_config.d/60-cloudimg-settings.conf
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication yes'
+        state: present
+        create: yes
+        backrefs: yes
+
+    - name: Restart SSH service
+      systemd:
+        name: ssh
+        state: restarted
+        enabled: true

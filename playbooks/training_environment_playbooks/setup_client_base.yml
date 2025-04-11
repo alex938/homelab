@@ -1,6 +1,6 @@
 ---
 - name: Configure cloud-init Kali Linux
-  hosts: training
+  hosts: kali1
   become: true
   vars_files:
     - vault.yml

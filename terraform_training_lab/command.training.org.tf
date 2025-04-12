@@ -47,4 +47,13 @@ resource "proxmox_vm_qemu" "command" {
   sshkeys    = <<EOF
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKyBpICpsW8z8x6O3u0uhggrDlnyk/mXNm5s4sG8R+Tv
 EOF
+
+  lifecycle {
+      ignore_changes = [
+      ciuser,
+      cipassword,
+      ipconfig0,
+      bootdisk,
+      disk]
+  }
 }

@@ -53,6 +53,15 @@ EOF
   bridge = "kali_net"
   macaddr = "02:00:AA:BB:DD:01"
   }
+
+  lifecycle {
+    ignore_changes = [
+    ciuser,
+    cipassword,
+    ipconfig0,
+    bootdisk,
+    disk]
+  }
 }
 
 

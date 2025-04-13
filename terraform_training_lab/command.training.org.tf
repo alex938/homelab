@@ -53,6 +53,7 @@ EOF
       ciuser,
       cipassword,
       ipconfig0,
+      ipconfig1,
       bootdisk,
       disk]
   }

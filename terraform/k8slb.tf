@@ -48,4 +48,13 @@ resource "proxmox_vm_qemu" "k8slb" {
         bridge = "vmbr0"
         firewall = true
     }
+    lifecycle {
+        ignore_changes = [
+        ciuser,
+        cipassword,
+        ipconfig0,
+        bootdisk,
+        network,
+        disk]
+    }
 }

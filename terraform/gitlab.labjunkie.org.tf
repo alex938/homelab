@@ -42,7 +42,6 @@ resource "proxmox_vm_qemu" "gitlab" {
     cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0" #"alex" changed via ansible scripts
     ipconfig0   = "ip=192.168.2.90/24,gw=192.168.2.1,dns=192.168.2.12,172.20.1.2"
 
-
     network {
         model  = "virtio"
         bridge = "vmbr0"

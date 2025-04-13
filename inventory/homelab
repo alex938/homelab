@@ -39,6 +39,7 @@ k.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnow
 kw1.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 kw2.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" 
 k8slb.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+apt.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [splunk]
 si.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"

@@ -49,4 +49,13 @@ resource "proxmox_vm_qemu" "kw1" {
         bridge = "vmbr0"
         firewall = false
     }
+    lifecycle {
+        ignore_changes = [
+        ciuser,
+        cipassword,
+        ipconfig0,
+        bootdisk,
+        network,
+        disk]
+    }
 }

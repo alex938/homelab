@@ -81,6 +81,17 @@
         dest: /etc/motd
         mode: '0644'
 
+    - name: configure apt proxy
+      copy:
+        dest: /etc/apt/apt.conf.d/01proxy
+        content: |
+          Acquire::http::Proxy "http://apt.labjunkie.org:3142";
+          Acquire::https::download.docker.com::Proxy "DIRECT";
+        owner: root
+        group: root
+        mode: '0644'
+      when: ping_result is not failed
+
     - name: Update and upgrade packages
       apt:
         update_cache: yes
@@ -115,16 +126,20 @@
       ignore_errors: true
       when: ping_result is not failed
 
-    - name: Download Docker install script
-      ansible.builtin.get_url:
-        url: https://get.docker.com
-        dest: /tmp/getdocker.sh
-        mode: '0744'
-      when: docker_installed.rc != 0 and ping_result is not failed
+    - name: install docker
+      apt:
+        name:
+          - docker.io
+        state: present
+        update_cache: yes
+      when: docker_installed.rc != 0
 
-    - name: Install Docker
-      shell: yes | sh /tmp/getdocker.sh
-      when: docker_installed.rc != 0 and ping_result is not failed
+    - name: Download docker-compose binary
+      get_url:
+        url: https://software.labjunkie.org/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+        force: yes
 
     - name: Create directory for Docker Compose
       file:
@@ -139,6 +154,6 @@
         mode: '0644'
 
     - name: Run Docker Compose to bring up services
-      command: docker compose up -d
+      command: docker-compose up -d
       args:
         chdir: /opt/services

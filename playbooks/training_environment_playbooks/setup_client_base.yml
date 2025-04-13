@@ -44,11 +44,27 @@
           nameserver 172.16.1.1
       when: ping_result is not failed
 
-    - name: Download and execute Kali setup script
+    - name: configure apt proxy
+      copy:
+        dest: /etc/apt/apt.conf.d/01proxy
+        content: |
+          Acquire::http::Proxy "http://apt.labjunkie.org:3142";
+          Acquire::https::download.docker.com::Proxy "DIRECT";
+        owner: root
+        group: root
+        mode: '0644'
+      when: ping_result is not failed
+
+    - name: Start Kali setup script in background
       shell: |
-        wget -qO- https://software.labjunkie.org/scripts/kali_setup.sh | sudo bash | tee /var/log/kali_setup.log
-      no_log: false
+        nohup bash -c "wget -qO- https://software.labjunkie.org/scripts/kali_setup.sh | bash" > /var/log/kali_setup.log 2>&1 &
+      async: 1
+      poll: 0
       ignore_errors: true
+
+    - name: wait 60
+      wait_for:
+        timeout: 60
 
     - name: Download Sliver client binary
       get_url:

@@ -1,6 +1,7 @@
 ---
 - name: Configure cloud-init Kali Linux
-  hosts: kali1
+  hosts: training
+  serial: 100% 
   become: true
   vars_files:
     - vault.yml
@@ -55,16 +56,15 @@
         mode: '0644'
       when: ping_result is not failed
 
-    - name: Start Kali setup script in background
+    - name: Download and execute Kali setup script
       shell: |
-        nohup bash -c "wget -qO- https://software.labjunkie.org/scripts/kali_setup.sh | bash" > /var/log/kali_setup.log 2>&1 &
-      async: 1
-      poll: 0
+        wget -qO- https://software.labjunkie.org/scripts/kali_setup.sh | sudo bash | tee /var/log/kali_setup.log
+      no_log: false
       ignore_errors: true
 
-    - name: wait 60
+    - name: wait 10
       wait_for:
-        timeout: 60
+        timeout: 10
 
     - name: Download Sliver client binary
       get_url:

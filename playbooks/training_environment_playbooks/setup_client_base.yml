@@ -1,7 +1,7 @@
 ---
 - name: Configure cloud-init Kali Linux
   hosts: training
-  serial: 100% 
+  serial: 4 
   become: true
   vars_files:
     - vault.yml
@@ -71,3 +71,80 @@
         url: https://software.labjunkie.org/sliver/sliver-client
         dest: /usr/local/bin/sliver
         mode: '0755'
+
+    - name: ensure /home/kali/.sliver-client directory exists
+      file:
+        path: /home/kali/.sliver-client
+        state: directory
+        owner: kali
+        group: kali
+        mode: '0755'
+      when: ping_result is not failed
+
+    - name: download Sliver Armory archive
+      get_url:
+        url: https://software.labjunkie.org/sliver-armory.tar.gz
+        dest: /tmp/sliver-armory.tar.gz
+        mode: '0644'
+      when: ping_result is not failed
+
+    - name: extract Sliver Armory archive to /home/kali/.sliver-client/
+      unarchive:
+        src: /tmp/sliver-armory.tar.gz
+        dest: /home/kali/.sliver-client/
+        remote_src: yes
+        owner: kali
+        group: kali
+      when: ping_result is not failed
+
+    - name: download chisel binary
+      get_url:
+        url: https://software.labjunkie.org/chisel_1.10.1_linux_amd64.gz
+        dest: /tmp/chisel.gz
+        mode: '0644'
+      when: ping_result is not failed
+
+    - name: decompress chisel binary
+      command: gunzip -f /tmp/chisel.gz
+      when: ping_result is not failed
+
+    - name: move chisel binary to /usr/local/bin
+      copy:
+        src: /tmp/chisel
+        dest: /usr/local/bin/chisel
+        remote_src: yes
+        owner: root
+        group: root
+        mode: '0755'
+      when: ping_result is not failed
+
+    - name: ensure /home/kali/Desktop exists
+      file:
+        path: /home/kali/Desktop
+        state: directory
+        owner: kali
+        group: kali
+        mode: '0755'
+      when: ping_result is not failed
+
+    - name: create .desktop shortcuts
+      copy:
+        dest: "/home/kali/Desktop/{{ item.filename }}"
+        content: |
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name={{ item.name }}
+          Comment={{ item.comment }}
+          Exec=xdg-open {{ item.url }}
+          Icon=internet-web-browser
+          Terminal=false
+          StartupNotify=true
+        owner: kali
+        group: kali
+        mode: '0755'
+      loop:
+        - { name: "target", comment: "target", url: "http://poe.local", filename: "poe.desktop" }
+        - { name: "share", comment: "share", url: "http://172.16.1.10:3000", filename: "share.desktop" }
+        - { name: "software", comment: "software", url: "https://software.labjunkie.org", filename: "software.desktop" }
+        - { name: "rules", comment: "rules", url: "https://software.labjunkie.org/rules.html", filename: "rules.desktop" }

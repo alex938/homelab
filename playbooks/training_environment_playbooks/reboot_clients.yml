@@ -1,7 +1,8 @@
 ---
 - name: Reboot training kali
-  hosts: training,servers_group,vuln_group
+  hosts: training,command_group,vuln_group,servers_group
   become: true
+  serial: 1
   gather_facts: false
   vars_files:
     - vault.yml

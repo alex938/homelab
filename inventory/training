@@ -2,37 +2,43 @@
 command ansible_connection=local
 
 [kali1]
-172.16.1.51 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.51 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
 
 [kali2]
-172.16.1.52 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.52 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
 
 [kali3]
-172.16.1.53 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.53 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
 
 [kali4]
-172.16.1.54 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.54 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
 
 [kali5]
-172.16.1.55 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.55 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
 
 [kali6]
-172.16.1.56 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.56 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
 
 [kali7]
-172.16.1.57 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.57 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
 
 [kali8]
-172.16.1.58 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.58 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
 
 [kali9]
-172.16.1.59 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.59 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
 
 [kali10]
-172.16.1.60 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.60 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
+
+[kali11]
+172.16.1.61 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
+
+[kali12]
+172.16.1.62 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ansible_ssh_timeout=60
 
 [sliversvr]
-172.16.1.20 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+172.16.1.20 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" 
 
 [command]
 172.16.1.10 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
@@ -51,6 +57,8 @@ kali7
 kali8
 kali9
 kali10
+kali11
+kali12
 
 [servers_group:children]
 sliversvr

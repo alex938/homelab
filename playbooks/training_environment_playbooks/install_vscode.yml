@@ -2,6 +2,7 @@
 - name: Install vscode
   hosts: training
   become: true
+  serial: 1
   vars_files:
     - vault.yml
 

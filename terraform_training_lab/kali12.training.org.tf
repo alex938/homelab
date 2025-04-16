@@ -1,16 +1,16 @@
-variable "create_k4_vm" {
+variable "create_k12_vm" {
   type    = bool
   default = true
 }
 
-resource "proxmox_vm_qemu" "kali4" {
-  count       = var.create_k4_vm ? 1 : 0
-  name        = "kali4.training.org"
-  desc        = "kali4.training.org"
-  vmid        = 1014
+resource "proxmox_vm_qemu" "kali12" {
+  count       = var.create_k12_vm ? 1 : 0
+  name        = "kali12.training.org"
+  desc        = "kali12.training.org"
+  vmid        = 1042
   target_node = "d720"
 
-  depends_on = [proxmox_vm_qemu.kali3]
+  depends_on = [proxmox_vm_qemu.kali11]
 
   agent       = 0
   clone       = "kali"
@@ -48,12 +48,12 @@ resource "proxmox_vm_qemu" "kali4" {
   sshkeys    = <<EOF
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKOTN5xB9rOGAkP1GS2MWPpnUkPD5qig3fAr3bEZFwmt
 EOF
-  ipconfig0  = "ip=172.16.1.54/24,gw=172.16.1.1,dns=172.16.1.1"
+  ipconfig0  = "ip=172.16.1.62/24,gw=172.16.1.1,dns=172.16.1.1"
 
   network {
     model  = "virtio"
     bridge = "kali_net"
-    macaddr = "02:00:CC:CC:CC:04"
+    macaddr = "02:00:AA:BB:CC:12"
   }
   
   lifecycle {

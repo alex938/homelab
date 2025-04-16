@@ -28,6 +28,7 @@
         dest: /etc/resolv.conf
         content: |
           nameserver 172.16.1.1
+          nameserver 10.10.10.1
 
     - name: Set the MOTD
       copy:

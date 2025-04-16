@@ -2,9 +2,9 @@
 - name: Install code extension
   hosts: training
   become: true
+  serial: 1
   vars_files:
     - vault.yml
-    - training.yml
 
   tasks:
     - name: Ping the host

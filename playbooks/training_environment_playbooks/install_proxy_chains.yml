@@ -1,0 +1,21 @@
+---
+- name: install proxy chains
+  hosts: training,servers_group
+  serial: 4 
+  become: true
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Ping the host
+      ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Install proxy chains
+      apt:
+        name:
+          - proxychains4
+          - freerdp3-x11
+        state: present

@@ -1,6 +1,6 @@
 ---
 - name: Reboot training kali
-  hosts: training,command_group,vuln_group,servers_group
+  hosts: training,vuln_group,servers_group
   become: true
   serial: 1
   gather_facts: false

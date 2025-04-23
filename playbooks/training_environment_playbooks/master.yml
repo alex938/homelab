@@ -4,5 +4,5 @@
 - import_playbook: setup_client_base.yml
 - import_playbook: setup_sliver_svr.yml
 - import_playbook: install_vscode.yml
-- import_playbook: install_proxy_chains.yml
+- import_playbook: install_additional_packages.yml
 - import_playbook: reboot_clients.yml

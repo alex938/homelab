@@ -1,5 +1,5 @@
 ---
-- name: install proxy chains
+- name: install additional packages for training environment
   hosts: training,servers_group
   serial: 4 
   become: true

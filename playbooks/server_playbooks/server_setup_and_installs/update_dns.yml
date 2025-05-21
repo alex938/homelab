@@ -12,6 +12,7 @@
         repo: "git@github.com:alex938/dns.git"
         dest: "/tmp/dns"
         key_file: "{{ ssh_key }}"
+        version: main
       run_once: true
       notify: cloning dns repo
 

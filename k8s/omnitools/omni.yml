@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: omnitools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: omnitools
+  template:
+    metadata:
+      labels:
+        app: omnitools
+    spec:
+      containers:
+        - name: omnitools
+          image: iib0011/omni-tools:latest
+          ports:
+            - containerPort: 80
+          env:
+          - name: HOSTNAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: omnitools
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    app: omnitools

@@ -10,6 +10,7 @@ spec:
   tls:
   - hosts:
     - software.labjunkie.org
+    - omnitools.labjunkie.org
     secretName: software-tls  # cert-manager will store the SSL certs here
   rules:
   - host: software.labjunkie.org
@@ -22,3 +23,13 @@ spec:
             name: fileserver-nginx-service
             port:
               number: 80
+  - host: omnitools.labjunkie.org
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: omnitools
+              port:
+                number: 80

@@ -34,6 +34,17 @@
           nameserver 192.168.2.12
           nameserver 172.20.1.2
 
+    - name: configure apt proxy
+      copy:
+        dest: /etc/apt/apt.conf.d/01proxy
+        content: |
+          Acquire::http::Proxy "http://apt.labjunkie.org:3142";
+          Acquire::https::download.docker.com::Proxy "DIRECT";
+        owner: root
+        group: root
+        mode: '0644'
+      when: ping_result is not failed
+
     - name: update and upgrade packages on debian or ubuntu
       apt:
         upgrade: safe 

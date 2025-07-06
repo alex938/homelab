@@ -27,4 +27,13 @@ fi
   fi
 done; } < "$TEMP_FILE"
 
+
+if ! grep -qF "source <(kubectl completion bash)" "$BASHRC_FILE"; then
+  echo "source <(kubectl completion bash)" >> "$BASHRC_FILE"
+fi
+
+if ! grep -qF "complete -o default -F __start_kubectl k" "$BASHRC_FILE"; then
+  echo "complete -o default -F __start_kubectl k" >> "$BASHRC_FILE"
+fi
+
 echo "Aliases updated in ~/.bashrc. Please run 'source ~/.bashrc' to apply the changes."

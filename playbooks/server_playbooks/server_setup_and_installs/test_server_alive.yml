@@ -3,7 +3,45 @@
   become: yes
   vars_files:
     - vault2.yml
-    
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
   tasks:
+    - name: Set facts
+      set_fact:
+        check: "{{ inventory_hostname | upper }} is alive"
+
     - name: Test connection
       ping:
+
+    - name: Pause for 5 seconds
+      pause:
+        seconds: 5
+
+    - name: Show connection status
+      debug:
+        msg: "{{ check }}"
+    
+    - name: Get release
+      fetch:
+        src: /etc/os-release
+        dest: /tmp/
+        flat: yes
+
+    - name: Register uptime
+      command: uptime
+      register: uptime_output
+
+    - name: Show uptime
+      debug:
+        msg: "Uptime: {{ uptime_output.stdout }}"
+
+    - name: When condition
+      command: hostname -s
+      when: ( ansible_distribution == "Ubuntu" and ansible_distribution_major_version | int >= 20 ) or ( ansible_distribution == "Kali" )
+      register: hostname_output
+
+    - name: Show hostname
+      debug:
+        msg: "Hostname: {{ hostname_output.stdout }}"
+      when: hostname_output is defined and hostname_output.stdout is defined

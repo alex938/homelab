@@ -41,3 +41,14 @@
             (rhel_reboot_check.rc == 1 | default(false))
           }}
       when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Reboot the host if required
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+      when: >
+        ping_result.ping is defined and ping_result.ping == 'pong' and (
+          (reboot_required.stat.exists | default(false)) or
+          (rhel_reboot_check.rc == 1 | default(false))
+        )
+      tags: reboot
+      #ansible-playbook check_reboot.yml --tags reboot

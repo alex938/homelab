@@ -11,6 +11,7 @@ spec:
   - hosts:
     - software.labjunkie.org
     - omnitools.labjunkie.org
+    - n8n.labjunkie.org
     secretName: software-tls  # cert-manager will store the SSL certs here
   rules:
   - host: software.labjunkie.org
@@ -33,3 +34,13 @@ spec:
               name: omnitools
               port:
                 number: 80
+  - host: n8n.labjunkie.org
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: n8n-service
+            port:
+              number: 5678

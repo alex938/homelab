@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: n8n-volume
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /volume1/n8n
+    server: nas.batcave.local
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: n8n-files-volume
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /volume1/n8n/n8n-files
+    server: nas.batcave.local    
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: n8n-pvc
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: n8n-files-pvc
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: n8n
+  template:
+    metadata:
+      labels:
+        app: n8n
+    spec:
+      containers:
+        - name: n8n
+          image: docker.n8n.io/n8nio/n8n
+          ports:
+            - containerPort: 5678
+          env:
+            - name: N8N_HOST
+              value: n8n.labjunkie.org
+            - name: N8N_PORT
+              value: "5678"
+            - name: N8N_PROTOCOL
+              value: http
+            - name: NODE_ENV
+              value: production
+            - name: WEBHOOK_URL
+              value: https://n8n.labjunkie.org/
+            - name: GENERIC_TIMEZONE
+              value: Europe/London
+          volumeMounts:
+            - name: n8n-volume
+              mountPath: /home/node/.n8n
+            - name: n8n-files-volume
+              mountPath: /files
+      volumes:
+        - name: n8n-volume
+          persistentVolumeClaim:
+            claimName: n8n-pvc
+        - name: n8n-files-volume
+          persistentVolumeClaim:
+            claimName: n8n-files-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n-service
+spec:
+  selector:
+    app: n8n
+  ports:
+    - port: 5678
+      targetPort: 5678
+  type: ClusterIP

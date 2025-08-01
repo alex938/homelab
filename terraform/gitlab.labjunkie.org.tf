@@ -26,7 +26,7 @@ resource "proxmox_vm_qemu" "gitlab" {
     disk {
         storage = "local-lvm"
         type    = "disk"
-        size    = "100G"     
+        size    = "200G"     
         slot    = "scsi0"    
         format  = "raw"
     }

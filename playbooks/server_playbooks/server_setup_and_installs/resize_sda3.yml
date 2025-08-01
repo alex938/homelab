@@ -1,0 +1,53 @@
+---
+- name: resize sda3
+  hosts: homelab:k8s
+  become: true
+  vars_files:
+    - vault2.yml
+
+  tasks:
+    - name: Check if /dev/sda3 exists
+      stat:
+        path: /dev/sda3
+      register: sda3_exists
+
+    - name: Grow partition /dev/sda3 to fill available disk space
+      command: growpart /dev/sda 3
+      when: sda3_exists.stat.exists
+      register: growpart_result
+      ignore_errors: true
+      notify: Partition Grown
+
+    - name: Resize the LVM physical volume
+      command: pvresize /dev/sda3
+      when: growpart_result is not failed
+      register: pvresize_result
+      notify: PV Resized
+
+    - name: Extend the logical volume to use all free space
+      command: lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv
+      when: pvresize_result is not failed
+      register: lvextend_result
+      notify: LV Extended
+
+    - name: Resize the root filesystem
+      command: resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
+      when: lvextend_result is not failed
+      notify: FS Resized
+
+  handlers:
+    - name: Partition Grown
+      debug:
+        msg: "/dev/sda3 partition grown to fill disk"
+
+    - name: PV Resized
+      debug:
+        msg: "LVM physical volume resized"
+
+    - name: LV Extended
+      debug:
+        msg: "Logical volume extended"
+
+    - name: FS Resized
+      debug:
+        msg: "Filesystem resized to use full logical volume"

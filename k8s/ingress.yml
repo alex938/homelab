@@ -12,6 +12,7 @@ spec:
     - software.labjunkie.org
     - omnitools.labjunkie.org
     - n8n.labjunkie.org
+    - fossflow.labjunkie.org
     secretName: software-tls  # cert-manager will store the SSL certs here
   rules:
   - host: software.labjunkie.org
@@ -27,13 +28,13 @@ spec:
   - host: omnitools.labjunkie.org
     http:
       paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: omnitools
-              port:
-                number: 80
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: omnitools
+            port:
+              number: 80
   - host: n8n.labjunkie.org
     http:
       paths:
@@ -44,3 +45,13 @@ spec:
             name: n8n-service
             port:
               number: 5678
+  - host: fossflow.labjunkie.org
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: fossflow-service
+            port:
+              number: 80

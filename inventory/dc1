@@ -1,0 +1,40 @@
+[local]
+localhost ansible_connection=local
+
+[dc1s1pfs]
+192.168.2.95 ansible_user=test ansible_ssh_private_key_file=/home/alex/keys/dc1s1pfs
+
+[dc1_s1_kali]
+192.168.3.1 ansible_user=kali ansible_ssh_private_key_file=/home/alex/keys/kali
+
+[dc1_s1_c2_svr]
+202.100.45.14 ansible_user=kali ansible_ssh_private_key_file=/home/alex/keys/kali
+
+[dc1_s1_catalyst]
+172.16.2.1 ansible_user=admin1 ansible_ssh_private_key_file=/home/alex/keys/ubuntuadmin
+
+[dc1_s1_seconion]
+172.16.2.30 ansible_user=admin1 ansible_ssh_private_key_file=/home/alex/keys/ubuntuadmin
+
+[dc1_s1_dns_beacon]
+192.168.10.108 ansible_user=admin1 ansible_ssh_private_key_file=/home/alex/keys/ubuntuadmin
+
+[dc1_s1_c2_client]
+192.168.10.1 ansible_user=kali ansible_ssh_private_key_file=/home/alex/keys/kali
+
+[student1:children]
+dc1_s1_kali
+dc1_s1_c2_svr
+dc1_s1_c2_client
+dc1_s1_dns_beacon
+dc1_s1_seconion
+dc1_s1_catalyst
+
+[student1:vars]
+ansible_ssh_common_args='-o ProxyCommand="ssh -i /home/alex/keys/dc1s1pfs -W %h:%p test@192.168.2.95" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+
+[students:children]
+student1
+
+[firewalls:children]
+dc1s1pfs

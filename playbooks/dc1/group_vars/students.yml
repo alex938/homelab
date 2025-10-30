@@ -1,0 +1,4 @@
+---
+ansible_port: 22
+ansible_ssh_timeout: 10
+...

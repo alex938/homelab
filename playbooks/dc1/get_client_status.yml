@@ -1,0 +1,15 @@
+---
+- name: Check if student hosts are up
+  hosts: students
+  gather_facts: false
+
+  tasks:
+    - name: Ping host
+      ansible.builtin.ping:
+      register: ping_result
+      ignore_errors: true
+      ignore_unreachable: true
+
+    - name: Save host status
+      ansible.builtin.set_fact:
+        host_status: "{{ 'UP' if (ping_result.ping is defined and ping_result.ping == 'pong') else 'DOWN' }}"

@@ -1,0 +1,169 @@
+---
+- name: Comprehensive test of DNS servers and APT cacher
+  hosts: localhost
+  gather_facts: no
+  
+  vars:
+    dns_servers:
+      - 192.168.2.12
+      - 192.168.2.14
+      - 172.20.1.2
+    test_domains:
+      - google.com
+      - github.com
+      - cloudflare.com
+      - labjunkie.org
+    apt_cacher: "apt.labjunkie.org:3142"
+    
+  tasks:
+    - name: Ensure dig is installed
+      apt:
+        name: dnsutils
+        state: present
+      become: yes
+
+    - name: Test DNS servers with different domains
+      shell: "dig @{{ item.0 }} {{ item.1 }} +short +time=2 +tries=1"
+      register: dns_results
+      ignore_errors: yes
+      loop: "{{ dns_servers | product(test_domains) | list }}"
+      loop_control:
+        label: "DNS {{ item.0 }} -> {{ item.1 }}"
+
+    - name: Display DNS test results
+      debug:
+        msg: |
+          ========================================
+          DNS Server Test Results
+          ========================================
+          {% for result in dns_results.results %}
+          DNS: {{ result.item.0 }} | Domain: {{ result.item.1 }}
+          Status: {{ 'SUCCESS' if result.rc == 0 else 'FAILED' }}
+          {% if result.rc == 0 %}
+          Response: {{ result.stdout_lines | join(', ') }}
+          {% else %}
+          Error: {{ result.stderr }}
+          {% endif %}
+          ----------------------------------------
+          {% endfor %}
+
+    - name: Test DNS failover timing (block primary DNS)
+      block:
+        - name: Block primary DNS server temporarily
+          command: "sudo iptables -A OUTPUT -d 192.168.2.12 -p udp --dport 53 -j DROP"
+          become: yes
+          
+        - name: Test DNS resolution with blocked primary
+          shell: "time nslookup google.com 2>&1"
+          register: failover_test
+          
+        - name: Unblock primary DNS server
+          command: "sudo iptables -D OUTPUT -d 192.168.2.12 -p udp --dport 53 -j DROP"
+          become: yes
+          
+        - name: Display failover test results
+          debug:
+            msg: |
+              ========================================
+              DNS Failover Test
+              ========================================
+              {{ failover_test.stdout }}
+              ========================================
+      rescue:
+        - name: Ensure firewall rule is removed on failure
+          command: "sudo iptables -D OUTPUT -d 192.168.2.12 -p udp --dport 53 -j DROP"
+          become: yes
+          ignore_errors: yes
+
+    - name: Test APT cacher connectivity
+      uri:
+        url: "http://{{ apt_cacher }}"
+        method: HEAD
+        status_code: [200, 406]
+        timeout: 5
+      register: apt_cacher_status
+      ignore_errors: yes
+
+    - name: Test APT cacher with package request
+      uri:
+        url: "http://{{ apt_cacher }}/ubuntu/pool/main/c/curl/curl_7.81.0-1ubuntu1.18_amd64.deb"
+        method: HEAD
+        status_code: [200, 302, 404]
+        timeout: 10
+      register: apt_package_test
+      ignore_errors: yes
+
+    - name: Display APT cacher test results
+      debug:
+        msg: |
+          ========================================
+          APT Cacher Test Results
+          ========================================
+          APT Cacher URL: http://{{ apt_cacher }}
+          
+          Service Status: {{ 'ONLINE' if apt_cacher_status.status in [200, 406] else 'OFFLINE' }}
+          Response Code: {{ apt_cacher_status.status | default('FAILED') }}
+          
+          Package Request Test: {{ 'SUCCESS' if apt_package_test.status in [200, 302] else 'FAILED' }}
+          Response Code: {{ apt_package_test.status | default('FAILED') }}
+          ========================================
+
+    - name: Check if APT proxy is configured on localhost
+      stat:
+        path: /etc/apt/apt.conf.d/01proxy
+      register: apt_proxy_config
+
+    - name: Read APT proxy configuration
+      slurp:
+        src: /etc/apt/apt.conf.d/01proxy
+      register: apt_proxy_content
+      when: apt_proxy_config.stat.exists
+
+    - name: Display APT proxy configuration status
+      debug:
+        msg: |
+          ========================================
+          APT Proxy Configuration
+          ========================================
+          Configuration File: {{ 'EXISTS' if apt_proxy_config.stat.exists else 'NOT FOUND' }}
+          {% if apt_proxy_config.stat.exists %}
+          Content: {{ apt_proxy_content.content | b64decode }}
+          {% else %}
+          Status: APT proxy not configured on this host
+          {% endif %}
+          ========================================
+
+    - name: Performance test - DNS query speed
+      shell: "time -p dig @{{ item }} google.com +short 2>&1 | grep real"
+      register: dns_speed
+      loop: "{{ dns_servers }}"
+      ignore_errors: yes
+
+    - name: Display DNS performance results
+      debug:
+        msg: |
+          ========================================
+          DNS Performance Test
+          ========================================
+          {% for result in dns_speed.results %}
+          DNS Server: {{ result.item }}
+          Query Time: {{ result.stdout if result.rc == 0 else 'FAILED' }}
+          ----------------------------------------
+          {% endfor %}
+
+    - name: Final Summary
+      debug:
+        msg: |
+          ========================================
+          INFRASTRUCTURE TEST SUMMARY
+          ========================================
+          
+          DNS Servers Tested: {{ dns_servers | length }}
+          Domains Tested: {{ test_domains | length }}
+          Total DNS Tests: {{ dns_results.results | length }}
+          Successful DNS Tests: {{ dns_results.results | selectattr('rc', 'equalto', 0) | list | length }}
+          Failed DNS Tests: {{ dns_results.results | rejectattr('rc', 'equalto', 0) | list | length }}
+          
+          APT Cacher Status: {{ 'OPERATIONAL' if apt_cacher_status.status in [200, 406] else 'DOWN' }}
+          
+          ========================================

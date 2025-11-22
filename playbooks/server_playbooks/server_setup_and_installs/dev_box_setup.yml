@@ -64,8 +64,9 @@
         dest: /etc/resolv.conf
         content: |
           nameserver 192.168.2.12
+          nameserver 192.168.2.14
           nameserver 172.20.1.2
-
+          options timeout:2 attempts:2
     - name: configure apt proxy
       copy:
         dest: /etc/apt/apt.conf.d/01proxy

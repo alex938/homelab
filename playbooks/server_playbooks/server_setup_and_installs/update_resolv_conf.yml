@@ -1,0 +1,67 @@
+---
+- name: Update DNS servers on all homelab hosts
+  hosts: homelab:k8s
+  become: true
+  vars_files:
+    - vault2.yml
+
+  tasks:
+    - name: Ping the host
+      ansible.builtin.ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Ensure dnsutils is installed
+      apt:
+        name: dnsutils
+        state: present
+      when: ping_result is not failed and (ansible_distribution == "Ubuntu" or ansible_distribution == "Debian")
+
+    - name: Ensure bind-utils is installed (for dig command on CentOS)
+      yum:
+        name: bind-utils
+        state: present
+      when: ping_result is not failed and ansible_distribution == "CentOS"
+
+    - name: Update resolv.conf with DNS servers
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          nameserver 192.168.2.12
+          nameserver 192.168.2.14
+          nameserver 172.20.1.2
+          options timeout:2 attempts:3
+      when: ping_result is not failed
+      notify: DNS Updated
+
+    - name: Test DNS server 192.168.2.12 with google.com
+      command: dig @192.168.2.12 google.com +short +time=2
+      register: dns_test_12
+      ignore_errors: true
+      when: ping_result is not failed
+
+    - name: Test DNS server 192.168.2.14 with github.com
+      command: dig @192.168.2.14 github.com +short +time=2
+      register: dns_test_14
+      ignore_errors: true
+      when: ping_result is not failed
+
+    - name: Test DNS server 172.20.1.2 with cloudflare.com
+      command: dig @172.20.1.2 cloudflare.com +short +time=2
+      register: dns_test_172
+      ignore_errors: true
+      when: ping_result is not failed
+
+    - name: Display DNS test results
+      debug:
+        msg: 
+          - "DNS 192.168.2.12 (google.com): {{ 'SUCCESS' if dns_test_12.rc == 0 else 'FAILED' }}"
+          - "DNS 192.168.2.14 (github.com): {{ 'SUCCESS' if dns_test_14.rc == 0 else 'FAILED' }}"
+          - "DNS 172.20.1.2 (cloudflare.com): {{ 'SUCCESS' if dns_test_172.rc == 0 else 'FAILED' }}"
+      when: ping_result is not failed
+
+  handlers:
+    - name: DNS Updated
+      debug:
+        msg: "DNS servers updated on {{ inventory_hostname }}"

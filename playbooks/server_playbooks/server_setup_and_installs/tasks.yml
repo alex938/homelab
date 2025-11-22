@@ -1,80 +1,120 @@
 ---
-- name: Maintenance tasks
+- name: Maintenance and Health Checks
   hosts: homelab:k8s
   become: true
   vars_files:
     - vault2.yml
 
   tasks:
-    - name: Run Docker system prune
+    # ---------------------------------------------------------
+    # Docker Maintenance
+    # ---------------------------------------------------------
+    - name: Prune Docker system (containers, images, networks)
       ansible.builtin.command:
-        cmd: "docker system prune -f"
+        cmd: "docker system prune -a -f --volumes"
+      register: docker_prune_output
+      changed_when: "'Total reclaimed space: 0B' not in docker_prune_output.stdout"
 
-    - name: update and upgrade packages on debian or ubuntu
+    # ---------------------------------------------------------
+    # APT (Debian/Ubuntu) Maintenance
+    # ---------------------------------------------------------
+    - name: Fix broken apt sources
+      ansible.builtin.command:
+        cmd: "apt-get update --fix-missing"
+      ignore_errors: yes
+      when: ansible_distribution in ["Ubuntu", "Debian"]
+
+    - name: Update and upgrade packages (Debian/Ubuntu)
       apt:
-        upgrade: safe 
+        upgrade: dist
         update_cache: yes
         force_apt_get: yes
-      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
-      notify: Updated Server
+        autoclean: yes
+        autoremove: yes
+      when: ansible_distribution in ["Ubuntu", "Debian"]
+      register: apt_result
 
-    - name: update and upgrade packages centos
+    - name: Check if reboot is required (Debian/Ubuntu)
+      stat:
+        path: /var/run/reboot-required
+      register: reboot_required_file
+      when: ansible_distribution in ["Ubuntu", "Debian"]
+
+    # ---------------------------------------------------------
+    # YUM/DNF (CentOS/RedHat) Maintenance
+    # ---------------------------------------------------------
+    - name: Update and upgrade packages (CentOS)
       yum:
         name: "*"
         state: latest
         update_cache: yes
-      when: ansible_distribution == "CentOS"
-      notify: Updated Server
-
-    - name: Run apt-get autoclean on Debian or Ubuntu
-      apt:
-        autoclean: yes
-      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
-
-    - name: Run apt-get autoremove on Debian or Ubuntu
-      apt:
-        autoremove: yes
-      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
-
-    - name: Remove unnecessary packages on CentOS
-      yum:
-        name: "*"
-        state: absent
         autoremove: yes
       when: ansible_distribution == "CentOS"
+      register: yum_result
 
+    - name: Check if reboot is required (CentOS)
+      command: needs-restarting -r
+      register: centos_reboot_check
+      failed_when: false
+      changed_when: false
+      when: ansible_distribution == "CentOS"
+
+    # ---------------------------------------------------------
+    # System Cleanup & Health
+    # ---------------------------------------------------------
     - name: Clean up journal logs (keep 2 weeks)
       ansible.builtin.command: journalctl --vacuum-time=2weeks
-      when: ansible_facts.os_family == "Debian" or ansible_facts.os_family == "RedHat"
+      when: ansible_os_family in ["Debian", "RedHat"]
+      changed_when: false
 
+    - name: Clean old files from /tmp (older than 7 days)
+      find:
+        paths: /tmp
+        age: 7d
+        recurse: yes
+      register: tmp_files_to_delete
+
+    - name: Remove old files from /tmp
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ tmp_files_to_delete.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+
+    - name: Check for failed systemd services
+      command: systemctl list-units --state=failed --no-legend
+      register: failed_services
+      changed_when: false
+
+    # ---------------------------------------------------------
+    # Reporting
+    # ---------------------------------------------------------
     - name: Gather all facts
       ansible.builtin.setup:
 
-    - name: Debug resource usage
+    - name: Final System Report
       debug:
         msg: |
           ============================
-          System Resource Information
+          System Health Report
           ============================
+          Hostname: {{ ansible_hostname }}
+          Distro:   {{ ansible_distribution }} {{ ansible_distribution_version }}
+          Uptime:   {{ ansible_uptime_seconds | int // 3600 }} hours, {{ (ansible_uptime_seconds | int % 3600) // 60 }} minutes
 
-          System Uptime: {{ ansible_facts.date_time.uptime | default('Unknown') }}
+          Updates:
+          - APT/YUM Changed: {{ apt_result.changed | default(yum_result.changed | default(false)) }}
 
-          CPU Information:
-            - Total CPUs: {{ ansible_facts.processor_cores | default('Unknown') }}
-            - CPU Model: {{ ansible_facts.processor | join(', ') | default('Unknown') }}
+          Reboot Status:
+          - Debian/Ubuntu: {{ reboot_required_file.stat.exists | default(false) }}
+          - CentOS: {{ centos_reboot_check.rc | default(0) == 1 }}
 
-          Memory Usage:
-            - Total Memory: {{ ansible_facts.memtotal_mb | default('Unknown') }} MB
-            - Free Memory: {{ ansible_facts.memfree_mb | default('Unknown') }} MB
-            - Available Memory: {{ ansible_facts.memavailable_mb | default(ansible_facts.memfree_mb | default('Unknown')) }} MB
+          Resources:
+          - CPU Cores: {{ ansible_processor_vcpus }}
+          - Memory: {{ ansible_memtotal_mb }} MB Total / {{ ansible_memfree_mb }} MB Free
+          - Disk (/): {{ (ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_available') | first | default(0) // 1024**3) }} GB Free
 
-          Disk Usage:
-            - Root Filesystem Size: {{ (ansible_facts.mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_total') | first | default(0) // 1024**3) | round(2) }} GB
-            - Root Filesystem Free: {{ (ansible_facts.mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_available') | first | default(0) // 1024**3) | round(2) }} GB
-
+          Issues Found:
+          - Failed Services: {{ failed_services.stdout_lines | default('None') }}
           ============================
-
-  handlers:
-    - name: Updated Server
-      debug:
-        msg: Packages were updated on {{ inventory_hostname }}

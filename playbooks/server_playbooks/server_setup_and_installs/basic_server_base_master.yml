@@ -1,0 +1,5 @@
+---
+- import_playbook: setup_server_base.yml
+- import_playbook: qemu_agent_install.yml
+- import_playbook: tasks.yml
+- import_playbook: reboot.yml

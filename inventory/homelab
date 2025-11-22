@@ -11,8 +11,9 @@ nas.batcave.local #synology
 pi5-rivers.batcave.local #rivers nas
 
 [dns]
-pi5-svr2.labjunkie.org
-pi5-rivers.batcave.local
+pi5-svr2.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+pi5-rivers.batcave.local ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+pihole3.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [centos]
 
@@ -21,6 +22,7 @@ dev1.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserK
 gitlab.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #gitlab
 rustdeck.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #rustdeck
 ai.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #ai server
+pihole3.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 [kworkers]
 kw1.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"

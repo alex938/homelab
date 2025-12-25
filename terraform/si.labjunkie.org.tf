@@ -55,6 +55,7 @@ resource "proxmox_vm_qemu" "si" {
         ipconfig0,
         bootdisk,
         network,
+        vm_state,
         disk]
     }
 }

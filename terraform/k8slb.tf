@@ -55,6 +55,7 @@ resource "proxmox_vm_qemu" "k8slb" {
         ipconfig0,
         bootdisk,
         network,
+        vm_state,
         disk]
     }
 }

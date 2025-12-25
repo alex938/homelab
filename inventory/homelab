@@ -23,6 +23,8 @@ gitlab.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o Use
 rustdeck.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #rustdeck
 ai.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #ai server
 pihole3.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+quiz.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #quiz server
+testbox.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #testbox
 
 [kworkers]
 kw1.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"

@@ -36,4 +36,8 @@ if ! grep -qF "complete -o default -F __start_kubectl k" "$BASHRC_FILE"; then
   echo "complete -o default -F __start_kubectl k" >> "$BASHRC_FILE"
 fi
 
+if ! grep -qE '^export KUBECONFIG=\$HOME/kubeconfig$' "$BASHRC_FILE"; then
+  echo "export KUBECONFIG=\$HOME/kubeconfig" >> "$BASHRC_FILE"
+fi
+
 echo "Aliases updated in ~/.bashrc. Please run 'source ~/.bashrc' to apply the changes."

@@ -1,13 +1,13 @@
-variable "create_quiz_vm" {
+variable "create_db_vm" {
   type    = bool
   default = true
 }
 
-resource "proxmox_vm_qemu" "quiz" {
-    count       = var.create_quiz_vm ? 1 : 0
-    name        = "quiz.labjunkie.org"
-    desc        = "quiz.labjunkie.org"
-    vmid        = "204"
+resource "proxmox_vm_qemu" "db" {
+    count       = var.create_db_vm ? 1 : 0
+    name        = "db.labjunkie.org"
+    desc        = "db.labjunkie.org"
+    vmid        = "206"
     target_node = "aio1"
     onboot      = true
 
@@ -42,7 +42,7 @@ resource "proxmox_vm_qemu" "quiz" {
     os_type     = "cloud-init"
     ciuser      = "alex"
     cipassword  = "$6$c/lkMtwWENjZ1QiM$x0tkiAz1PnVcKgajgqTPSvW.dvR.jwodsyQr.XSrG2SwVKJ1JzhAabQoQMz2MfZgDmipAFA46L65ckOVxszHA0" #"alex" changed via ansible scripts
-    ipconfig0   = "ip=192.168.2.95/24,gw=192.168.2.1,dns=192.168.2.12,192.168.2.14,172.20.1.2"
+    ipconfig0   = "ip=192.168.2.100/24,gw=192.168.2.1,dns=192.168.2.12,192.168.2.14,172.20.1.2"
 
     network {
         model  = "virtio"

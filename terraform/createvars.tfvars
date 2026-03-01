@@ -6,3 +6,4 @@ create_pihole3_vm = true
 create_quiz_vm = true
 create_apt_vm = true
 create_testbox_vm = true
+create_db_vm = true

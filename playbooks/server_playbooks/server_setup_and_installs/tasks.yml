@@ -34,6 +34,12 @@
       when: ansible_distribution in ["Ubuntu", "Debian"]
       register: apt_result
 
+    - name: Explicitly remove unused dependencies and old kernels (purge)
+      command: apt-get -y autoremove --purge
+      when: ansible_distribution in ["Ubuntu", "Debian"]
+      register: apt_purge_result
+      changed_when: "'0 upgraded, 0 newly installed, 0 to remove' not in apt_purge_result.stdout"
+
     - name: Check if reboot is required (Debian/Ubuntu)
       stat:
         path: /var/run/reboot-required
@@ -87,6 +93,22 @@
       register: failed_services
       changed_when: false
 
+    - name: Check NTP synchronization status
+      command: timedatectl show --property=NTPSynchronized --value
+      register: ntp_status
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Count zombie processes
+      shell: ps axo stat | grep -c Z || true
+      register: zombie_count
+      changed_when: false
+
+    - name: Check for recent OOM kills (dmesg)
+      shell: dmesg | grep -i "out of memory" | tail -n 5 || true
+      register: oom_events
+      changed_when: false
+
     # ---------------------------------------------------------
     # Reporting
     # ---------------------------------------------------------
@@ -109,6 +131,11 @@
           Reboot Status:
           - Debian/Ubuntu: {{ reboot_required_file.stat.exists | default(false) }}
           - CentOS: {{ centos_reboot_check.rc | default(0) == 1 }}
+
+          Health Checks:
+          - NTP Synced: {{ ntp_status.stdout | default('Unknown') }}
+          - Zombies: {{ zombie_count.stdout | default('0') }}
+          - OOM Events: {{ oom_events.stdout_lines | default([]) | length }}
 
           Resources:
           - CPU Cores: {{ ansible_processor_vcpus }}

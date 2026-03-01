@@ -10,11 +10,31 @@
       debug:
         var: ansible_user
 
+    - name: Check connectivity to port 22
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host | default(inventory_hostname) }}"
+        port: "{{ ansible_port | default(22) }}"
+        state: started
+        timeout: 3
+      delegate_to: localhost
+      register: ssh_check
+      ignore_errors: true
+
+    - name: Debug SSH Check
+      ansible.builtin.debug:
+        var: ssh_check
+      when: ssh_check.failed
+
+    - name: End play for unreachable host
+      ansible.builtin.meta: end_host
+      when: ssh_check.failed
+
     - name: Ping the host
       ansible.builtin.ping:
       register: ping_result
       ignore_unreachable: true
       ignore_errors: true
+      when: not ssh_check.failed
 
     - name: Gather facts
       ansible.builtin.setup:

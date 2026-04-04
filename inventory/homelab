@@ -31,6 +31,9 @@ db.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKno
 kw1.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 kw2.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" 
 
+[kali]
+kali.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #db server
+
 [k8slb]
 k8slb.labjunkie.org ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" #kubernetes load balancer proxmox ms01
 
@@ -67,6 +70,7 @@ ubuntu
 proxmox
 splunk
 training_k8s
+kali
 
 [k8s:children]
 kworkers

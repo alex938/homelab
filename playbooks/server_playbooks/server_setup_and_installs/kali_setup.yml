@@ -1,0 +1,237 @@
+---
+- name: Kali Setup
+  hosts: kali
+  gather_facts: false
+  become: true
+  vars_files:
+    - vault2.yml
+  
+  vars:
+    motd_debian: "*** no unauthorised access ***\n"
+
+  tasks:
+    - name: Ping the host
+      ansible.builtin.ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Gather facts
+      ansible.builtin.setup:
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Display Operating System
+      ansible.builtin.debug:
+        msg: "Operating System: {{ ansible_facts['os_family'] }}"
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Display Memory
+      ansible.builtin.debug:
+        msg: "Total Memory: {{ ansible_facts['memtotal_mb'] }} MB"
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Display Network Adapter Information
+      ansible.builtin.debug:
+        msg:
+          Adapter Name: "{{ ansible_default_ipv4.interface }}"
+          IP Address: "{{ ansible_default_ipv4.address }}"
+          MAC Address: "{{ ansible_default_ipv4.macaddress }}"
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Grow partition /dev/sda1 to fill available disk space
+      command: growpart /dev/sda 1
+      register: growpart_result
+      ignore_errors: true
+
+    - name: Resize the root filesystem
+      command: resize2fs /dev/sda1
+      when: growpart_result is not failed
+
+    - name: Set SSH MOTD
+      copy:
+        content: "{{ motd_debian }}"
+        dest: /etc/motd
+        mode: '0644'
+      when: ping_result is not failed
+
+    - name: Preconfigure language and keyboard settings
+      shell: |
+        echo "keyboard-configuration keyboard-configuration/layoutcode string gb" | debconf-set-selections
+        echo "keyboard-configuration keyboard-configuration/modelcode string pc105" | debconf-set-selections
+        echo "keyboard-configuration keyboard-configuration/layout select United Kingdom" | debconf-set-selections
+        echo "keyboard-configuration keyboard-configuration/variant select English (UK)" | debconf-set-selections
+        echo "locales locales/default_environment_locale select en_GB.UTF-8" | debconf-set-selections
+        echo "locales locales/locales_to_be_generated multiselect en_GB.UTF-8 UTF-8" | debconf-set-selections
+      when: ping_result is not failed
+
+    - name: configure apt proxy
+      copy:
+        dest: /etc/apt/apt.conf.d/01proxy
+        content: |
+          Acquire::http::Proxy "http://apt.labjunkie.org:3142";
+          Acquire::https::download.docker.com::Proxy "DIRECT";
+        owner: root
+        group: root
+        mode: '0644'
+      when: ping_result is not failed
+
+    - name: Install zstd for initramfs compression
+      apt:
+        name: zstd
+        state: present
+        update_cache: yes
+      when: ping_result is not failed
+
+    - name: Download and execute Kali setup script
+      shell: |
+        wget -qO- https://software.labjunkie.org/scripts/kali_setup.sh | sudo bash | tee /var/log/kali_setup.log
+      no_log: false
+      ignore_errors: true
+
+    - name: wait 10
+      wait_for:
+        timeout: 10
+
+    - name: Download Sliver client binary
+      get_url:
+        url: https://software.labjunkie.org/sliver/sliver-client
+        dest: /usr/local/bin/sliver
+        mode: '0755'
+
+    - name: ensure /home/kali/.sliver-client directory exists
+      file:
+        path: /home/kali/.sliver-client
+        state: directory
+        owner: kali
+        group: kali
+        mode: '0755'
+      when: ping_result is not failed
+
+    - name: download Sliver Armory archive
+      get_url:
+        url: https://software.labjunkie.org/sliver-armory.tar.gz
+        dest: /tmp/sliver-armory.tar.gz
+        mode: '0644'
+      when: ping_result is not failed
+
+    - name: extract Sliver Armory archive to /home/kali/.sliver-client/
+      unarchive:
+        src: /tmp/sliver-armory.tar.gz
+        dest: /home/kali/.sliver-client/
+        remote_src: yes
+        owner: kali
+        group: kali
+      when: ping_result is not failed
+
+    - name: download chisel binary
+      get_url:
+        url: https://software.labjunkie.org/chisel_1.10.1_linux_amd64.gz
+        dest: /tmp/chisel.gz
+        mode: '0644'
+      when: ping_result is not failed
+
+    - name: decompress chisel binary
+      command: gunzip -f /tmp/chisel.gz
+      when: ping_result is not failed
+
+    - name: move chisel binary to /usr/local/bin
+      copy:
+        src: /tmp/chisel
+        dest: /usr/local/bin/chisel
+        remote_src: yes
+        owner: root
+        group: root
+        mode: '0755'
+      when: ping_result is not failed
+
+    - name: Install proxy chains
+      apt:
+        name:
+          - proxychains4
+          - freerdp3-x11
+          - python3-pip
+          - python3.13-venv
+        state: present
+
+    - name: Install pentesting tools
+      apt:
+        name:
+          - theharvester
+          - nikto
+          - dnsrecon
+          - dirb
+          - bind9-host
+          - xsser
+          - whois
+          - sslyze
+          - dnswalk
+          - uniscan
+          - fierce
+          - wafw00f
+        state: present
+
+    - name: Fix any interrupted dpkg operations
+      command: dpkg --configure -a
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Install Proxmox guest agent
+      apt:
+        name: qemu-guest-agent
+        state: present
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Enable and start qemu-guest-agent service
+      systemd:
+        name: qemu-guest-agent
+        state: started
+      when: ping_result.ping is defined and ping_result.ping == 'pong'
+
+    - name: Ensure curl is installed
+      ansible.builtin.package:
+        name: curl
+        state: present
+
+    - name: Check if Docker is installed
+      ansible.builtin.command:
+        cmd: docker --version
+      register: docker_installed
+      ignore_errors: true
+      changed_when: false
+
+    - name: install docker via apt
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+      when: docker_installed.rc != 0 and ping_result is not failed
+      notify: Docker Installed
+
+    - name: check if docker installation script exists
+      stat:
+        path: /tmp/getdocker.sh
+      register: docker_script
+      when: ping_result is not failed
+
+    - name: cleanup docker installation script
+      ansible.builtin.file:
+        path: /tmp/getdocker.sh
+        state: absent
+      when: docker_script.stat.exists and ping_result is not failed
+      notify: Docker Script Removed
+
+    - name: Reboot the system
+      ansible.builtin.reboot:
+      when: ping_result.ping is defined and ping_result.ping == 'pong' and ansible_distribution in ["Debian", "Ubuntu", "Kali"]
+
+  handlers:
+    - name: Docker Script Downloaded
+      ansible.builtin.debug:
+        msg: "Docker installation script downloaded"
+
+    - name: Docker Installed
+      ansible.builtin.debug:
+        msg: "Docker has been installed"
+
+    - name: Docker Script Removed
+      ansible.builtin.debug:
+        msg: "Docker installation script cleaned up"

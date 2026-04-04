@@ -7,3 +7,4 @@ create_quiz_vm = true
 create_apt_vm = true
 create_testbox_vm = true
 create_db_vm = true
+create_kali_vm = true

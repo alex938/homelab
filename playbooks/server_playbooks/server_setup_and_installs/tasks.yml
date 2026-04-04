@@ -22,7 +22,7 @@
       ansible.builtin.command:
         cmd: "apt-get update --fix-missing"
       ignore_errors: yes
-      when: ansible_distribution in ["Ubuntu", "Debian"]
+      when: ansible_os_family == "Debian"
 
     - name: Update and upgrade packages (Debian/Ubuntu)
       apt:
@@ -31,12 +31,12 @@
         force_apt_get: yes
         autoclean: yes
         autoremove: yes
-      when: ansible_distribution in ["Ubuntu", "Debian"]
+      when: ansible_os_family == "Debian"
       register: apt_result
 
     - name: Explicitly remove unused dependencies and old kernels (purge)
       command: apt-get -y autoremove --purge
-      when: ansible_distribution in ["Ubuntu", "Debian"]
+      when: ansible_os_family == "Debian"
       register: apt_purge_result
       changed_when: "'0 upgraded, 0 newly installed, 0 to remove' not in apt_purge_result.stdout"
 
@@ -44,7 +44,7 @@
       stat:
         path: /var/run/reboot-required
       register: reboot_required_file
-      when: ansible_distribution in ["Ubuntu", "Debian"]
+      when: ansible_os_family == "Debian"
 
     # ---------------------------------------------------------
     # YUM/DNF (CentOS/RedHat) Maintenance

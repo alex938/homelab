@@ -10,7 +10,7 @@ resource "proxmox_vm_qemu" "kali1" {
   vmid        = 1011
   target_node = "d720"
 
-  agent       = 0
+  agent       = 1
   clone       = "kalici"
   cores       = 4
   sockets     = 1

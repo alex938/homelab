@@ -11,12 +11,13 @@
     docker_compose_content: |
       services:
         nexterm:
-          ports:
-            - "6989:6989"
+          image: nexterm/aio:latest
+          network_mode: host
+          environment:
+            ENCRYPTION_KEY: "4e8ded4ee92ae478c20c793132610868fe3e38efb7baa7654a010ac6ab30510f"
           restart: always
           volumes:
-            - './nexterm/data:/app/data'
-          image: germannewsmaker/nexterm:1.0.2-OPEN-PREVIEW
+            - nexterm:/app/data
 
         postgres:
           image: postgres:15

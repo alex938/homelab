@@ -12,7 +12,7 @@ resource "proxmox_vm_qemu" "kali2" {
 
   depends_on = [proxmox_vm_qemu.kali1]
 
-  agent       = 0
+  agent       = 1
   clone       = "kalici"
   cores       = 4
   sockets     = 1

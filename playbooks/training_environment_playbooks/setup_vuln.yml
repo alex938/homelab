@@ -47,6 +47,32 @@
         mode: '0644'
       when: ping_result is not failed
 
+    - name: Probe apt cache update (diagnostics)
+      command: apt-get update
+      register: apt_update_probe
+      changed_when: false
+      failed_when: false
+
+    - name: Show apt diagnostics when update probe fails
+      debug:
+        msg: |
+          apt-get update failed (rc={{ apt_update_probe.rc }})
+          stdout:
+          {{ apt_update_probe.stdout | default('') }}
+          stderr:
+          {{ apt_update_probe.stderr | default('') }}
+      when: apt_update_probe.rc != 0
+
+    - name: Fail with apt diagnostics when update probe fails
+      fail:
+        msg: |
+          apt update pre-check failed (rc={{ apt_update_probe.rc }}).
+          stdout:
+          {{ apt_update_probe.stdout | default('') }}
+          stderr:
+          {{ apt_update_probe.stderr | default('') }}
+      when: apt_update_probe.rc != 0
+
     - name: Update and upgrade packages
       apt:
         update_cache: yes
@@ -58,11 +84,48 @@
         state: present
         update_cache: yes
 
+    - name: Check for qemu guest agent virtio channel
+      stat:
+        path: /dev/virtio-ports/org.qemu.guest_agent.0
+      register: qga_channel
+
     - name: Ensure qemu-guest-agent is running and enabled
-      systemd:
-        name: qemu-guest-agent
-        state: started
-        enabled: true
+      when: qga_channel.stat.exists
+      block:
+        - name: Start and enable qemu-guest-agent
+          systemd:
+            name: qemu-guest-agent
+            state: started
+            enabled: true
+      rescue:
+        - name: Collect qemu-guest-agent service status
+          command: systemctl --no-pager -l status qemu-guest-agent
+          register: qga_status
+          changed_when: false
+          failed_when: false
+
+        - name: Collect recent qemu-guest-agent journal logs
+          command: journalctl --no-pager -u qemu-guest-agent -n 80
+          register: qga_journal
+          changed_when: false
+          failed_when: false
+
+        - name: Fail with qemu-guest-agent diagnostics
+          fail:
+            msg: |
+              qemu-guest-agent failed to start.
+              systemctl status output:
+              {{ qga_status.stdout | default('') }}
+
+              journalctl output:
+              {{ qga_journal.stdout | default('') }}
+
+    - name: Explain why qemu-guest-agent start was skipped
+      debug:
+        msg: |
+          Skipping qemu-guest-agent start because /dev/virtio-ports/org.qemu.guest_agent.0 is missing.
+          Enable the QEMU guest agent channel in the hypervisor/VM settings, then rerun.
+      when: not qga_channel.stat.exists
 
     - name: Install required packages
       apt:
@@ -88,8 +151,16 @@
         mode: '0744'
       when: docker_installed.rc != 0 and ping_result is not failed
 
+    - name: Remove unsupported docker-model-plugin from installer
+      ansible.builtin.replace:
+        path: /tmp/getdocker.sh
+        regexp: ' docker-model-plugin'
+        replace: ''
+      when: docker_installed.rc != 0 and ping_result is not failed
+
     - name: Install Docker
-      shell: yes | sh /tmp/getdocker.sh
+      ansible.builtin.command:
+        cmd: sh /tmp/getdocker.sh
       when: docker_installed.rc != 0 and ping_result is not failed
 
     - name: Create project directory for Apache container

@@ -56,6 +56,37 @@
         mode: '0644'
       when: ping_result is not failed
 
+    - name: Install qemu-guest-agent
+      apt:
+        name: qemu-guest-agent
+        state: present
+        update_cache: yes
+      when: ping_result is not failed
+
+    - name: Check for qemu guest agent virtio channel
+      stat:
+        path: /dev/virtio-ports/org.qemu.guest_agent.0
+      register: qga_channel
+      when: ping_result is not failed
+
+    - name: Ensure qemu-guest-agent is enabled and running
+      systemd:
+        name: qemu-guest-agent
+        state: started
+        enabled: true
+      when:
+        - ping_result is not failed
+        - qga_channel.stat.exists
+
+    - name: Explain why qemu-guest-agent start was skipped
+      debug:
+        msg: |
+          Skipping qemu-guest-agent start because /dev/virtio-ports/org.qemu.guest_agent.0 is missing.
+          Enable the QEMU guest agent channel in the hypervisor/VM settings, then rerun.
+      when:
+        - ping_result is not failed
+        - not qga_channel.stat.exists
+
     - name: Download and execute Kali setup script
       shell: |
         wget -qO- https://software.labjunkie.org/scripts/kali_setup.sh | sudo bash | tee /var/log/kali_setup.log
@@ -148,3 +179,54 @@
         - { name: "share", comment: "share", url: "http://172.16.1.10:3000", filename: "share.desktop" }
         - { name: "software", comment: "software", url: "https://software.labjunkie.org", filename: "software.desktop" }
         - { name: "rules", comment: "rules", url: "https://software.labjunkie.org/rules.html", filename: "rules.desktop" }
+
+    - name: Add xrdp user to ssl-cert group for key access
+      user:
+        name: xrdp
+        groups: ssl-cert
+        append: true
+      when: ping_result is not failed
+
+    - name: Set xRDP session startup to xfce4-session for kali
+      copy:
+        dest: /home/kali/.xsession
+        content: |
+          xfce4-session
+        owner: kali
+        group: kali
+        mode: '0644'
+      when: ping_result is not failed
+
+    - name: Remove stale XFCE session cache for kali
+      file:
+        path: /home/kali/.cache/sessions
+        state: absent
+      when: ping_result is not failed
+
+    - name: Recreate XFCE session cache directory for kali
+      file:
+        path: /home/kali/.cache/sessions
+        state: directory
+        owner: kali
+        group: kali
+        mode: '0700'
+      when: ping_result is not failed
+
+    - name: Restart xrdp services
+      service:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - xrdp-sesman
+        - xrdp
+      when: ping_result is not failed
+
+    - name: Ensure xrdp services are enabled and running
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - xrdp-sesman
+        - xrdp
+      when: ping_result is not failed

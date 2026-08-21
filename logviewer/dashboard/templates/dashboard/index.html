@@ -1,0 +1,99 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Agent Log Viewer{% endblock %}
+
+{% block content %}
+<header class="masthead">
+  <div>
+    <h1>Agent <span class="dim">//</span> Log Viewer</h1>
+    <p class="sub">{{ repo_url }} &middot; latest log per service</p>
+  </div>
+  <span class="spacer"></span>
+  <div class="metrics">
+    <div class="metric">
+      <div class="value">{{ cards|length }}</div>
+      <div class="label">Services</div>
+    </div>
+    <div class="metric{% if degraded %} alert{% endif %}">
+      <div class="value">{{ degraded }}</div>
+      <div class="label">Degraded</div>
+    </div>
+    <div class="metric{% if open_actions %} alert{% endif %}">
+      <div class="value">{{ open_actions }}</div>
+      <div class="label">Actions</div>
+    </div>
+    <form method="post" action="{% url 'dashboard:refresh' %}">
+      {% csrf_token %}
+      <button class="btn" type="submit" id="refresh-button"{% if state.running %} disabled{% endif %}>Refresh</button>
+    </form>
+  </div>
+</header>
+
+{% include "dashboard/_statusbar.html" %}
+
+{% if cards %}
+<div class="grid">
+  {% for card in cards %}
+  <article class="frame is-{{ card.status }}">
+    <div class="frame-inner">
+      <div class="card-head">
+        <h2>{{ card.service.slug }}</h2>
+        <span class="spacer"></span>
+        <span class="pill {{ card.status }}">{{ card.status }}</span>
+      </div>
+
+      {% with summary=card.summary %}
+      {% if summary %}
+        <p class="headline">{{ summary.headline|default:"No headline in this log." }}</p>
+
+        <div class="card-meta">
+          <span>{{ summary.log_filename }}</span>
+          {% if summary.logged_at %}<span>{{ summary.logged_at|date:"Y-m-d H:i" }}Z</span>{% endif %}
+        </div>
+
+        {% if summary.key_points %}
+          <p class="section-label">Key points</p>
+          <ul class="points">
+            {% for point in summary.key_points %}<li>{{ point }}</li>{% endfor %}
+          </ul>
+        {% endif %}
+
+        <p class="section-label">Actions required</p>
+        {% if summary.actions %}
+          <ul class="actions">
+            {% for action in summary.actions %}
+            <li class="p-{{ action.priority }}">
+              <span class="tag">{{ action.priority }}</span>
+              <span>{{ action.text }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="all-clear">None &mdash; no human action needed.</p>
+        {% endif %}
+
+        <div class="card-foot">
+          <span>via {{ summary.summariser }}</span>
+          <span class="spacer"></span>
+          <a href="{% url 'dashboard:service_detail' card.service.slug %}">Full log &rsaquo;</a>
+        </div>
+      {% else %}
+        <p class="headline">Waiting for the first summary of this service.</p>
+        <div class="card-foot"><span>No summary yet</span></div>
+      {% endif %}
+      {% endwith %}
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="frame is-unknown">
+  <div class="frame-inner">
+    <p class="empty">
+      No services yet. The dashboard is pulling
+      <strong>{{ repo_url }}</strong> &mdash; this page refreshes itself when the
+      first summaries land.
+    </p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

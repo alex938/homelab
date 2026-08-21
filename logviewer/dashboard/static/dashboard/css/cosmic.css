@@ -1,0 +1,511 @@
+/* Cosmic UI derived theme (https://github.com/rizznme/cosmic-ui).
+   Tokens mirror the upstream @theme block: rgb(20,160,230) primary,
+   rgb(202,65,34) accent, a background of primary mixed 80% into black,
+   Orbitron type, small base size and a faint foreground grid. */
+
+:root {
+  --primary: rgb(20, 160, 230);
+  --primary-foreground: rgb(255, 255, 255);
+  --accent: rgb(202, 65, 34);
+  --success: rgb(20, 184, 166);
+  --warning: rgb(245, 158, 11);
+  --destructive: rgb(244, 63, 94);
+
+  --foreground: rgb(255, 255, 255);
+  --secondary-foreground: color-mix(in oklab, var(--primary), white 70%);
+  --muted: color-mix(in oklab, var(--primary), white 50%);
+
+  --background: #04202e;
+  --background: color-mix(in oklab, var(--primary), black 80%);
+  --panel: color-mix(in oklab, var(--primary), black 72%);
+  --panel-strong: color-mix(in oklab, var(--primary), black 62%);
+  --line: color-mix(in oklab, var(--primary), transparent 55%);
+  --line-soft: color-mix(in oklab, var(--primary), transparent 78%);
+
+  --text-xs: 0.59375rem;
+  --text-sm: 0.71875rem;
+  --text-base: 0.84375rem;
+  --text-lg: 0.96875rem;
+  --text-xl: 1.09375rem;
+  --text-2xl: 1.28125rem;
+  --text-4xl: 2.03125rem;
+
+  --cut: 12px;
+  --cut-sm: 7px;
+
+  --font-display: "Orbitron", "Eurostile", "Bank Gothic", system-ui, sans-serif;
+  --font-body: "Roboto", "Helvetica Neue", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "DejaVu Sans Mono", ui-monospace, monospace;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--background);
+  background-attachment: fixed;
+  background-image:
+    radial-gradient(1200px 600px at 12% -10%,
+      color-mix(in oklab, var(--primary), transparent 88%), transparent 70%),
+    radial-gradient(900px 500px at 100% 0%,
+      color-mix(in oklab, var(--accent), transparent 92%), transparent 70%),
+    repeating-linear-gradient(0deg,
+      rgb(255 255 255 / 5%) 0, rgb(255 255 255 / 5%) 1px,
+      transparent 1px, transparent 35rem),
+    repeating-linear-gradient(90deg,
+      rgb(255 255 255 / 5%) 0, rgb(255 255 255 / 5%) 1px,
+      transparent 1px, transparent 35rem);
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  letter-spacing: 0.05em;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--secondary-foreground); text-decoration: none; }
+a:hover { color: var(--foreground); }
+
+.container {
+  max-width: 92rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+/* --- Frame: cosmic-ui's clipped-corner panel, done with clip-path ---------- */
+
+.frame {
+  position: relative;
+  background: var(--line);
+  clip-path: polygon(
+    var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+
+.frame > .frame-inner {
+  position: relative;
+  background: var(--panel);
+  clip-path: polygon(
+    var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  margin: 1px;
+  padding: 1rem 1.1rem;
+  height: calc(100% - 2px);
+}
+
+.frame.is-critical { background: color-mix(in oklab, var(--destructive), transparent 40%); }
+.frame.is-warning  { background: color-mix(in oklab, var(--warning), transparent 45%); }
+.frame.is-healthy  { background: color-mix(in oklab, var(--success), transparent 50%); }
+.frame.is-unknown  { background: var(--line-soft); }
+
+/* --- Header ---------------------------------------------------------------- */
+
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 0 1.4rem;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 1.75rem;
+}
+
+.masthead h1 {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.masthead h1 .dim { color: var(--muted); font-weight: 400; }
+
+.masthead .sub {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.masthead .spacer { flex: 1 1 auto; }
+
+.metrics { display: flex; gap: 1.5rem; align-items: center; }
+
+.metric { text-align: right; line-height: 1.2; }
+.metric .value { font-size: var(--text-xl); font-weight: 700; }
+.metric .label {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+.metric.alert .value { color: var(--accent); }
+
+/* --- Buttons --------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  cursor: pointer;
+  padding: 0.55rem 1.1rem;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--primary-foreground);
+  background: color-mix(in oklab, var(--primary), black 25%);
+  clip-path: polygon(
+    var(--cut-sm) 0, 100% 0, 100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%, 0 100%, 0 var(--cut-sm));
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  background: var(--primary);
+  box-shadow: 0 0 18px color-mix(in oklab, var(--primary), transparent 55%);
+}
+
+.btn[disabled] { opacity: 0.45; cursor: progress; }
+
+.btn.ghost {
+  background: transparent;
+  color: var(--secondary-foreground);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.btn.ghost:hover { color: var(--foreground); background: var(--line-soft); }
+
+/* --- Status pills ---------------------------------------------------------- */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  clip-path: polygon(
+    5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+}
+
+.pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.pill.healthy  { color: var(--success);     background: color-mix(in oklab, var(--success), transparent 88%); }
+.pill.warning  { color: var(--warning);     background: color-mix(in oklab, var(--warning), transparent 88%); }
+.pill.critical { color: var(--destructive); background: color-mix(in oklab, var(--destructive), transparent 85%); }
+.pill.unknown  { color: var(--muted);       background: rgb(255 255 255 / 6%); }
+
+/* --- Service grid ---------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(23rem, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.card-head h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.card-head .spacer { flex: 1 1 auto; }
+
+.card-meta {
+  margin: 0.6rem 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+
+.headline {
+  margin: 0.85rem 0 0;
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+}
+
+.section-label {
+  margin: 1.1rem 0 0.45rem;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-body);
+  letter-spacing: 0.01em;
+}
+
+.points li {
+  position: relative;
+  padding-left: 1.1rem;
+  margin-bottom: 0.35rem;
+  line-height: 1.5;
+}
+
+.points li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  background: var(--primary);
+  transform: rotate(45deg);
+}
+
+.actions { margin: 0; padding: 0; list-style: none; }
+
+.actions li {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  padding: 0.45rem 0.6rem;
+  margin-bottom: 0.35rem;
+  font-family: var(--font-body);
+  line-height: 1.5;
+  background: rgb(255 255 255 / 3%);
+  border-left: 2px solid var(--muted);
+}
+
+.actions li.p-high   { border-left-color: var(--destructive); }
+.actions li.p-medium { border-left-color: var(--warning); }
+.actions li.p-low    { border-left-color: var(--primary); }
+.actions li.p-info   { border-left-color: var(--muted); }
+
+.tag {
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding-top: 0.15rem;
+  color: var(--muted);
+}
+.p-high .tag   { color: var(--destructive); }
+.p-medium .tag { color: var(--warning); }
+.p-low .tag    { color: var(--primary); }
+
+.all-clear {
+  font-family: var(--font-body);
+  color: var(--success);
+  margin: 0;
+}
+
+.card-foot {
+  margin-top: 1rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.card-foot .spacer { flex: 1 1 auto; }
+
+/* --- Status bar / notices --------------------------------------------------- */
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 0.55rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  background: rgb(255 255 255 / 3%);
+  clip-path: polygon(
+    var(--cut-sm) 0, 100% 0, 100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%, 0 100%, 0 var(--cut-sm));
+}
+
+.statusbar .spacer { flex: 1 1 auto; }
+.statusbar.has-error { color: var(--destructive); }
+
+.scanner {
+  width: 8px;
+  height: 8px;
+  background: var(--muted);
+  transform: rotate(45deg);
+  flex: 0 0 auto;
+}
+.statusbar.is-running .scanner {
+  background: var(--primary);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.25; box-shadow: none; }
+  50% { opacity: 1; box-shadow: 0 0 12px var(--primary); }
+}
+
+.empty {
+  padding: 3.5rem 1rem;
+  text-align: center;
+  font-family: var(--font-body);
+  color: var(--muted);
+}
+
+/* --- Detail page ------------------------------------------------------------ */
+
+.crumbs {
+  font-size: var(--text-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (min-width: 64rem) {
+  .detail-grid { grid-template-columns: minmax(0, 24rem) minmax(0, 1fr); }
+  /* Keep the actions visible while scrolling a long log. */
+  .detail-grid > .summary-panel { position: sticky; top: 1.25rem; }
+}
+
+/* The log panel manages its own padding so the <pre> can scroll edge to edge
+   inside the clipped frame instead of being cropped by the corner cuts. */
+.log-panel > .frame-inner {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.log-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.6rem 1.1rem;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.log-head .spacer { flex: 1 1 auto; }
+
+.log-toggle {
+  border: 0;
+  cursor: pointer;
+  padding: 0.25rem 0.6rem;
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--secondary-foreground);
+  background: rgb(255 255 255 / 6%);
+  clip-path: polygon(
+    5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+}
+
+.log-toggle:hover { color: var(--foreground); background: var(--line-soft); }
+.log-toggle[aria-pressed="true"] {
+  color: var(--primary-foreground);
+  background: color-mix(in oklab, var(--primary), black 25%);
+}
+
+.raw {
+  margin: 0;
+  flex: 1 1 auto;
+  /* Fill the viewport rather than an arbitrary fixed height, but never
+     collapse on a short screen or run away on a very tall one. */
+  height: clamp(20rem, calc(100vh - 19rem), 62rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  /* The extra bottom padding clears the frame's bottom-right corner cut. */
+  padding: 0.9rem 1.1rem 1.9rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  letter-spacing: 0;
+  line-height: 1.55;
+  tab-size: 4;
+  /* Logs are fixed-width ASCII tables and box art, so alignment is preserved
+     and the panel scrolls sideways. The Wrap button opts out. */
+  white-space: pre;
+  color: color-mix(in oklab, var(--foreground), transparent 12%);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) rgb(0 0 0 / 25%);
+}
+
+.raw.wrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+}
+
+.raw::-webkit-scrollbar { width: 10px; height: 10px; }
+.raw::-webkit-scrollbar-track { background: rgb(0 0 0 / 25%); }
+.raw::-webkit-scrollbar-thumb { background: var(--line); }
+.raw::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+.raw::-webkit-scrollbar-corner { background: rgb(0 0 0 / 25%); }
+
+.kv { margin: 0; font-family: var(--font-mono); font-size: var(--text-xs); }
+.kv div { display: flex; gap: 0.75rem; padding: 0.25rem 0; }
+.kv dt { flex: 0 0 7.5rem; color: var(--muted); text-transform: uppercase; }
+.kv dd { margin: 0; word-break: break-all; }
+
+@media (max-width: 40rem) {
+  .masthead { align-items: flex-start; }
+  .metrics { width: 100%; justify-content: space-between; }
+  .grid { grid-template-columns: 1fr; }
+  .raw { height: clamp(18rem, calc(100vh - 14rem), 40rem); }
+  .kv dt { flex-basis: 5.5rem; }
+}

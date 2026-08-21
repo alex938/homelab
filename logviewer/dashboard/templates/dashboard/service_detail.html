@@ -1,0 +1,113 @@
+{% extends "dashboard/base.html" %}
+{% block title %}{{ service.slug }} &middot; Log Viewer{% endblock %}
+
+
+{% block content %}
+<header class="masthead">
+  <div>
+    <p class="crumbs"><a href="{% url 'dashboard:index' %}">&lsaquo; All services</a></p>
+    <h1>{{ service.slug }}</h1>
+    <p class="sub">{% if summary %}{{ summary.log_filename }}{% else %}no log{% endif %}</p>
+  </div>
+  <span class="spacer"></span>
+  <div class="metrics">
+    {% if summary %}<span class="pill {{ summary.status }}">{{ summary.status }}</span>{% endif %}
+    <a class="btn ghost" href="{% url 'dashboard:index' %}">Board</a>
+  </div>
+</header>
+
+{% include "dashboard/_statusbar.html" %}
+
+<div class="detail-grid">
+  <aside class="frame summary-panel is-{% if summary %}{{ summary.status }}{% else %}unknown{% endif %}">
+    <div class="frame-inner">
+      {% if summary %}
+        <p class="headline">{{ summary.headline }}</p>
+
+        {% if summary.key_points %}
+          <p class="section-label">Key points</p>
+          <ul class="points">
+            {% for point in summary.key_points %}<li>{{ point }}</li>{% endfor %}
+          </ul>
+        {% endif %}
+
+        <p class="section-label">Actions required</p>
+        {% if summary.actions %}
+          <ul class="actions">
+            {% for action in summary.actions %}
+            <li class="p-{{ action.priority }}">
+              <span class="tag">{{ action.priority }}</span>
+              <span>{{ action.text }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="all-clear">None &mdash; no human action needed.</p>
+        {% endif %}
+
+        <p class="section-label">Source</p>
+        <dl class="kv">
+          <div><dt>Path</dt><dd>{{ summary.log_path }}</dd></div>
+          <div><dt>Size</dt><dd>{{ summary.log_bytes }} bytes</dd></div>
+          {% if summary.logged_at %}<div><dt>Logged</dt><dd>{{ summary.logged_at|date:"Y-m-d H:i" }}Z</dd></div>{% endif %}
+          {% if summary.commit_sha %}<div><dt>Commit</dt><dd>{{ summary.commit_sha|slice:":8" }}</dd></div>{% endif %}
+          {% if summary.commit_subject %}<div><dt>Subject</dt><dd>{{ summary.commit_subject }}</dd></div>{% endif %}
+          <div><dt>Summarised</dt><dd>{{ summary.summarised_at|date:"Y-m-d H:i" }}Z via {{ summary.summariser }}</dd></div>
+          {% if summary.error %}<div><dt>Note</dt><dd>{{ summary.error }}</dd></div>{% endif %}
+        </dl>
+      {% else %}
+        <p class="empty">No summary for this service yet.</p>
+      {% endif %}
+    </div>
+  </aside>
+
+  <section class="frame log-panel is-unknown">
+    <div class="frame-inner">
+      <div class="log-head">
+        <span>Raw log</span>
+        {% if raw_log %}
+          <span>{{ raw_lines }} lines</span>
+          <span>{{ summary.log_bytes|filesizeformat }}</span>
+        {% endif %}
+        <span class="spacer"></span>
+        {% if raw_log %}
+          <button type="button" class="log-toggle" id="wrap-toggle"
+                  aria-pressed="false" aria-controls="raw-log">Wrap</button>
+        {% endif %}
+      </div>
+      {% if raw_log %}
+        <pre class="raw" id="raw-log" tabindex="0">{{ raw_log }}</pre>
+      {% else %}
+        <p class="empty">The raw log file is not present in the local clone.</p>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+(function () {
+  const toggle = document.getElementById("wrap-toggle");
+  const log = document.getElementById("raw-log");
+  if (!toggle || !log) { return; }
+
+  const KEY = "logviewer.wrap";
+  function apply(on) {
+    log.classList.toggle("wrap", on);
+    toggle.setAttribute("aria-pressed", on ? "true" : "false");
+  }
+
+  let stored = null;
+  try { stored = localStorage.getItem(KEY); } catch (err) { /* private mode */ }
+  apply(stored === "1");
+
+  toggle.addEventListener("click", function () {
+    const on = toggle.getAttribute("aria-pressed") !== "true";
+    apply(on);
+    try { localStorage.setItem(KEY, on ? "1" : "0"); } catch (err) { /* ignore */ }
+  });
+})();
+</script>
+{% endblock %}

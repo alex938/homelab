@@ -1,0 +1,7 @@
+<div class="statusbar{% if state.running %} is-running{% endif %}{% if state.error %} has-error{% endif %}" id="statusbar">
+  <span class="scanner"></span>
+  <span id="statusbar-text">{% if state.error %}{{ state.error }}{% elif state.running %}Refreshing from GitLab...{% else %}{{ state.message|default:"Idle" }}{% endif %}</span>
+  <span class="spacer"></span>
+  {% if state.last_commit_sha %}<span>HEAD {{ state.last_commit_sha|slice:":8" }}</span>{% endif %}
+  {% if state.last_checked_at %}<span>CHECKED {{ state.last_checked_at|date:"Y-m-d H:i" }}Z</span>{% endif %}
+</div>

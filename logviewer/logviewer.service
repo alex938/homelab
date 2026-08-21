@@ -1,0 +1,43 @@
+# Log viewer as a systemd service, so it survives logout and reboots.
+#
+#   sudo ./install-service.sh          install, enable at boot, start now
+#   systemctl status logviewer
+#   journalctl -u logviewer -f
+#
+# The unit runs run.sh, which is the same entry point used interactively, so
+# there is only ever one way to start this app.
+[Unit]
+Description=Homelab log viewer (Django/gunicorn)
+Documentation=file:///home/alex/homelab/logviewer/CLAUDE.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=alex
+Group=alex
+WorkingDirectory=/home/alex/homelab/logviewer
+
+# run.sh calls git and the Claude CLI; give them a PATH that does not depend on
+# an interactive login shell. ~/.local/bin is where the claude binary lives.
+Environment=PATH=/home/alex/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=PYTHONUNBUFFERED=1
+
+ExecStart=/home/alex/homelab/logviewer/run.sh 192.168.100.20:9000
+
+# First start may create .venv and pip install, which is slow on a Pi.
+TimeoutStartSec=600
+Restart=on-failure
+RestartSec=5s
+
+# `systemctl reload logviewer` HUPs gunicorn's master, which respawns the
+# workers and so re-imports the Python code without dropping the socket. It
+# does NOT re-run pip, migrate or collectstatic - use restart for those.
+ExecReload=/bin/kill -s HUP $MAINPID
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=logviewer
+
+[Install]
+WantedBy=multi-user.target

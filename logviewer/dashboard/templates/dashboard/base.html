@@ -1,0 +1,62 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Log Viewer{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="{% static 'dashboard/css/cosmic.css' %}">
+</head>
+<body>
+<div class="container">
+  {% block content %}{% endblock %}
+</div>
+
+{% block scripts %}
+<script>
+(function () {
+  const endpoint = "{% url 'dashboard:state' %}";
+  const intervalMs = {{ poll_seconds|default:20 }} * 1000;
+  const baseVersion = {{ state.version|default:0 }};
+  const bar = document.getElementById("statusbar");
+  const text = document.getElementById("statusbar-text");
+  const button = document.getElementById("refresh-button");
+
+  async function tick() {
+    let data;
+    try {
+      const response = await fetch(endpoint, {headers: {"Accept": "application/json"}});
+      if (!response.ok) { return; }
+      data = await response.json();
+    } catch (err) {
+      return;  // offline or server restarting; try again next tick
+    }
+
+    // A newer log has been summarised: clear this view and show the new one.
+    if (data.version !== baseVersion) {
+      window.location.reload();
+      return;
+    }
+
+    if (bar) {
+      bar.classList.toggle("is-running", !!data.running);
+      bar.classList.toggle("has-error", !!data.error);
+    }
+    if (text) {
+      text.textContent = data.error
+        ? data.error
+        : (data.running ? "Refreshing from GitLab..." : (data.message || "Idle"));
+    }
+    if (button) { button.disabled = !!data.running; }
+  }
+
+  tick();
+  setInterval(tick, intervalMs);
+})();
+</script>
+{% endblock %}
+</body>
+</html>

@@ -24,9 +24,9 @@
       ignore_errors: yes
       when: ansible_os_family == "Debian"
 
-    - name: Update and upgrade packages (Debian/Ubuntu)
+    - name: Update packages (Debian/Ubuntu)
       apt:
-        upgrade: dist
+        upgrade: yes
         update_cache: yes
         force_apt_get: yes
         autoclean: yes
@@ -108,6 +108,14 @@
       shell: dmesg | grep -i "out of memory" | tail -n 5 || true
       register: oom_events
       changed_when: false
+
+    - name: Run remote cleanup script
+      ansible.builtin.shell:
+        cmd: >-
+          curl -fsSL https://raw.githubusercontent.com/alex938/misc/main/cleanup.sh
+          | sudo bash -s -- --docker-images-all --deep-caches
+        executable: /bin/bash
+      changed_when: true
 
     # ---------------------------------------------------------
     # Reporting
